@@ -67,7 +67,10 @@ static uint16_t opcode_len()
 void flags_update_basic_by_value(uint8_t value)
 {
     if (value == 0) SET_FLAG(FLAG_Z, 1);
+    else SET_FLAG(FLAG_Z, 0);
+
     if ((int8_t)value < 0) SET_FLAG(FLAG_N, 1);
+    else SET_FLAG(FLAG_N, 0);
 }
 
 void flags_update_basic_by_register(short_reg_t reg)
