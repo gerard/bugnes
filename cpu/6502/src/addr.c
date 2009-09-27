@@ -8,6 +8,7 @@ uint16_t ADDR(addr_mode_t mode)
     int8_t relative = (int8_t)MEM_READ(GET_PC() + 1);
 
     switch (mode) {
+    case A_IMM: return GET_PC() + 1;
     case A_ZPA: return addr_zero_page;
     case A_ZPX: return addr_zero_page + GET_SREG(REG_X);
     case A_ZPY: return addr_zero_page + GET_SREG(REG_Y);
@@ -22,10 +23,10 @@ uint16_t ADDR(addr_mode_t mode)
     }
 }
 
+/* Pesky ACC addressing mode... */
 uint8_t VALUE(addr_mode_t mode)
 {
     switch (mode) {
-    case A_IMM: return MEM_READ(GET_PC() + 1);
     case A_ACC: return GET_SREG(REG_ACC);
     default:    return 0;
     }
