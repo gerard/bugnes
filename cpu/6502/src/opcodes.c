@@ -163,7 +163,7 @@ static void asm_stack2pc()
 
 static void asm_mem2pc(uint16_t addr, int condition)
 {
-    if (condition) branch_status(MEM_READ16(addr));
+    if (condition) branch_status(addr);
 }
 
 
