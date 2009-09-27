@@ -1,0 +1,5 @@
+roms
+*.o
+*.a
+a.out
+*.swp
