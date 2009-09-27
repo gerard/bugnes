@@ -72,6 +72,11 @@ int sfot_load(int fd, uint16_t offset, uint16_t len)
     return bytes_read;
 }
 
+void sfot_set_reset(uint16_t val)
+{
+    MEM_WRITE16(CPU_ADDR_RESET, val);
+}
+
 sfot_step_cb sfot_install_step_cb(sfot_step_cb cb)
 {
     sfot_step_cb old_cb = step_cb;

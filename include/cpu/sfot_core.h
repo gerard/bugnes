@@ -46,11 +46,13 @@ struct sfot_step_info {
     sfot_addr_mode_t addr_mode;
     int opcode_par_n;
     uint8_t opcode_par[2];
-    char opcode_decoded[32];
+    char opcode_decoded[128];
 };
 
 typedef int (*sfot_step_cb)(struct sfot_step_info *info);
 sfot_step_cb sfot_install_step_cb(sfot_step_cb step_cb);
+
+void sfot_set_reset(uint16_t val);
 
 int sfot_load(int fd, uint16_t offset, uint16_t len);
 void sfot_poweron();

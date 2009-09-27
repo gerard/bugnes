@@ -4,13 +4,17 @@
 #include <assert.h>
 #include "cpu/sfot.h"
 
+/* This is just awful, but hopefully manageable */
 
 void disassemble_opcode(struct sfot_step_info *info)
 {
-    strncpy(info->opcode_decoded, info->opcode_name, 4);
-    char *buf = &info->opcode_decoded[3];
+    memset(info->opcode_decoded, ' ', 24);
+    sprintf(info->opcode_decoded, "%04X: %s", info->reg_pc, info->opcode_name);
+
+    char *buf = &info->opcode_decoded[9];
     uint8_t byte1 = info->opcode_par[0];
     uint8_t byte2 = info->opcode_par[1];
+    int i;
 
     if (info->opcode_par_n == 0) {
         switch (info->addr_mode) {
@@ -22,7 +26,7 @@ void disassemble_opcode(struct sfot_step_info *info)
         default:
             assert(0);
         }
-        return;
+        goto proc_next;
     }
 
     if (info->opcode_par_n == 1) {
@@ -51,7 +55,7 @@ void disassemble_opcode(struct sfot_step_info *info)
         default:
             assert(0);
         }
-        return;
+        goto proc_next;
     }
     
     switch (info->addr_mode) {
@@ -70,4 +74,15 @@ void disassemble_opcode(struct sfot_step_info *info)
     default:
         assert(0);
     }   
+
+proc_next:
+    while(*buf) buf++;
+    *buf = ' ';
+    buf = &info->opcode_decoded[24];
+    for (i = 0; i < SFOT_REG_MAX; i++)
+    {
+        uint8_t reg = info->registers[i];
+        buf += sprintf(buf, reg ? " [%02X]" : " [  ]", reg);
+    }
+    *buf = 0;
 }
