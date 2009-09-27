@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <assert.h>
+#include "memhooks.h"
 #include "core.h"
 
 /* MODULE VARIABLES: CPU State and registers */
@@ -14,8 +17,10 @@ static uint8_t *stack = &mem[0x100];
  */
 uint8_t MEM_READ(uint16_t addr)
 {
-    /* TODO: Check list of mapped registers */
-    return mem[addr];
+    memhook_fun_t mh_f;
+    mh_f = memhook_check(MEMHOOK_TYPE_READ, addr);
+
+    return mh_f ? mh_f(addr, NULL) : mem[addr];
 }
 
 /* Note that non-aligned memory access is fine */
@@ -26,8 +31,11 @@ uint16_t MEM_READ16(uint16_t addr)
 
 void MEM_WRITE(uint16_t addr, uint8_t v)
 {
-    /* TODO: Check list of mapped registers */
-    mem[addr] = v;
+    memhook_fun_t mh_f;
+    mh_f = memhook_check(MEMHOOK_TYPE_WRITE, addr);
+
+    if (!mh_f) mem[addr] = v;
+    else mh_f(addr, &mem[addr]);
 }
 
 void MEM_WRITE16(uint16_t addr, uint16_t v)
@@ -38,6 +46,8 @@ void MEM_WRITE16(uint16_t addr, uint16_t v)
 
 void MEM_INC(uint16_t addr, int8_t v)
 {
+    /* We don't support this to simplify things for now */
+    assert(!memhook_check(MEMHOOK_TYPE_WRITE, addr));
     mem[addr] += v;
 }
 
