@@ -35,7 +35,7 @@ void MEM_WRITE(uint16_t addr, uint8_t v)
     mh_f = memhook_check(MEMHOOK_TYPE_WRITE, addr);
 
     if (!mh_f) mem[addr] = v;
-    else mh_f(addr, &mem[addr]);
+    else mem[addr] = mh_f(addr, &v);
 }
 
 void MEM_WRITE16(uint16_t addr, uint16_t v)
