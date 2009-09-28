@@ -25,6 +25,8 @@
 #define SCREEN_OFFSET       0x200
 #define SCREEN_SIZE         0x400
 
+#define PIXEL_SIZE          8
+
 SDL_Surface *screen;
 
 int step_cb(struct sfot_step_info *info)
@@ -57,9 +59,11 @@ uint8_t screen_memhook(uint16_t addr, uint8_t *color)
     case 0xF: rgb = SDL_MapRGB(screen->format, 0xBB, 0xBB, 0xBB); break;
     }
 
-    SDL_LockSurface(screen);
-    ((uint8_t *)screen->pixels)[addr - SCREEN_OFFSET] = (uint8_t)rgb;
-    SDL_UnlockSurface(screen);
+    SDL_Rect pixel;
+    pixel.w = pixel.h = PIXEL_SIZE;
+    pixel.x = ((addr - SCREEN_OFFSET) & 0x1f) * PIXEL_SIZE;
+    pixel.y = ((addr - SCREEN_OFFSET) >> 5) * PIXEL_SIZE;
+    SDL_FillRect(screen, &pixel, rgb);
 
     SDL_Flip(screen);
 
@@ -77,7 +81,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
         return EXIT_FAILURE;
     }
-    if(!(screen = SDL_SetVideoMode(32, 32, 8, SDL_DOUBLEBUF | SDL_HWSURFACE))) {
+    if(!(screen = SDL_SetVideoMode(32*PIXEL_SIZE, 32*PIXEL_SIZE, 8,
+                                   SDL_DOUBLEBUF | SDL_HWSURFACE))) {
         fprintf(stderr, "Couldn't set Video Mode: %s\n", SDL_GetError());
         return EXIT_FAILURE;
     }
