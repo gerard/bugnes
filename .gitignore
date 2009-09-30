@@ -3,3 +3,4 @@ roms
 *.a
 a.out
 *.swp
+*.bin
