@@ -1,6 +1,12 @@
 #!/bin/bash
 URL="http://www.6502asm.com/examples"
 
+if [ $1 = "--download" ]
+then
+    [ -z "$2" ] && exit 1
+    wget $URL/$2
+    exit 0
+fi
 [ -z "$1" ] && exit 1
 
 ASM=$1.asm
