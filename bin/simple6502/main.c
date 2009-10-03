@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -24,6 +25,8 @@
 
 #define SCREEN_OFFSET       0x200
 #define SCREEN_SIZE         0x400
+#define RANDOM_OFFSET       0xFE
+#define RANDOM_SIZE         0x1
 
 #define PIXEL_SIZE          8
 
@@ -70,11 +73,19 @@ uint8_t screen_memhook(uint16_t addr, uint8_t *color)
     return 0;
 }
 
+uint8_t random_memhook(uint16_t addr, uint8_t *dummy)
+{
+    return random() & 0xFF;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2) return EXIT_FAILURE;
     int fd = open(argv[1], O_RDONLY);
     if (fd < 0) return EXIT_FAILURE;
+
+    /* Initialize randomness */
+    srandom(time(NULL));
 
     /* SDL stuff */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -96,10 +107,12 @@ int main(int argc, char *argv[])
     sfot_set_reset(0xC000);
     close(fd);
 
-    /* Callbacks: Video hook and step by step callback*/
+    /* Callbacks: Video hook, random hook and step by step callback */
     sfot_install_step_cb(step_cb);
     sfot_memhook_insert(MEMHOOK_TYPE_WRITE, screen_memhook,
                         SCREEN_OFFSET, SCREEN_OFFSET+SCREEN_SIZE);
+    sfot_memhook_insert(MEMHOOK_TYPE_READ, random_memhook,
+                        RANDOM_OFFSET, RANDOM_OFFSET+RANDOM_SIZE);
 
     /* Check that the hook is there for good... */
     char buf[1024];
