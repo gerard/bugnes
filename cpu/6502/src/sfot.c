@@ -37,6 +37,13 @@ static void *cpu_thread(void *arg)
 {
     struct sfot_step_info step_info;
 
+    if (pthread_equal(pthread_self(), thr)) {
+        /* Running in a thread: close stdin */
+        /* XXX: Probably we should also close stdout/stderr and comunicat via hooks */
+        printf("Running on a thread\n");
+        close(0);
+    }
+
     while (1) {
         opcode_fetch();
         opcode_exec();

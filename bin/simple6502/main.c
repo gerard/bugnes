@@ -30,11 +30,21 @@
 
 #define PIXEL_SIZE          8
 
+#define BUG(s)                 fprintf(stderr, "%s: this is not supposed to happen: %s:%d\n", (s), __FUNCTION__, __LINE__)
+
 SDL_Surface *screen;
 
 int step_cb(struct sfot_step_info *info)
 {
     printf("%s\n", info->opcode_decoded);
+
+    /* For some reason, if we start flooding the stdout, stdin looses all
+     * tracks of what "being responsive" means.
+     * We introduce a small delay here so SDL_WaitEvents gets a chance to see
+     * the keypresses.  Not nice for performance; anyway, you shouldn't be
+     * using this callback at all if you want performace.
+     */
+    usleep(10);
 
     return 0;
 }
@@ -83,6 +93,7 @@ int main(int argc, char *argv[])
     if (argc < 2) return EXIT_FAILURE;
     int fd = open(argv[1], O_RDONLY);
     if (fd < 0) return EXIT_FAILURE;
+    SDL_Event event;
     uint8_t fb_memory[SCREEN_HOOK_SIZE];
     uint16_t i;
 
@@ -129,7 +140,15 @@ int main(int argc, char *argv[])
     printf(buf);
 
     /* Crossing fingers... */
-    sfot_poweron(SFOT_RUN_MAIN);
+    sfot_poweron(SFOT_RUN_THREADED);
 
-    return EXIT_SUCCESS;
+    /* SFOT is running in a thread.  Now let's poll for events here */
+    while (SDL_WaitEvent(&event)) {
+        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+            return EXIT_SUCCESS;
+        }
+    }
+
+    BUG("END");
+    return EXIT_FAILURE;
 }
