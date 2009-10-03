@@ -44,6 +44,6 @@ int ADDR_VALID(uint16_t addr)
 
 uint8_t ADDR_MODE_GET_VALUE(addr_mode_t mode)
 {
-    return ADDR_VALID(ADDR(mode)) ? ADDR(mode) : VALUE(mode);
+    return ADDR_VALID(ADDR(mode)) ? MEM_READ(ADDR(mode)) : VALUE(mode);
 }
 
