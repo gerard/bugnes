@@ -335,7 +335,7 @@ static void asm_ROR(addr_mode_t m)   { asm_shrot(ADDR(m), REG_ACC, -1, GET_FLAG(
 /* JSR pushes the address of the return address minus one */
 static void asm_JMP(addr_mode_t m)   { asm_mem2pc(ADDR(m), 1); }
 static void asm_JSR(addr_mode_t m)   { asm_pc2stack(); asm_mem2pc(ADDR(m), 1); }
-static void asm_RTS(addr_mode_t m)   { asm_stack2pc((STACK_POP16(), 1)); }
+static void asm_RTS(addr_mode_t m)   { asm_stack2pc(); }
 
 /* Branches */
 static void asm_BCC(addr_mode_t m)   { asm_mem2pc(ADDR(m), !GET_FLAG(FLAG_C)); }
