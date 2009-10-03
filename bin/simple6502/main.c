@@ -144,7 +144,8 @@ int main(int argc, char *argv[])
 
     /* SFOT is running in a thread.  Now let's poll for events here */
     while (SDL_WaitEvent(&event)) {
-        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE
+                                      && event.key.keysym.mod == KMOD_LSHIFT) {
             return EXIT_SUCCESS;
         }
     }
