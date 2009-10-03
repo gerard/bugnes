@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
+#include <pthread.h>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -27,12 +28,16 @@
 #define SCREEN_HOOK_SIZE    0x400
 #define RANDOM_HOOK_OFFSET  0xFE
 #define RANDOM_HOOK_SIZE    0x1
+#define KEY_HOOK_OFFSET     0xFF
+#define KEY_HOOK_SIZE       0x1
 
 #define PIXEL_SIZE          8
 
 #define BUG(s)                 fprintf(stderr, "%s: this is not supposed to happen: %s:%d\n", (s), __FUNCTION__, __LINE__)
 
 SDL_Surface *screen;
+uint8_t keycode;
+pthread_mutex_t keycode_m = PTHREAD_MUTEX_INITIALIZER;
 
 int step_cb(struct sfot_step_info *info)
 {
@@ -88,6 +93,15 @@ uint8_t random_memhook(uint16_t addr, uint8_t *dummy)
     return random() & 0xFF;
 }
 
+uint8_t keycode_memhook(uint16_t addr, uint8_t *dummy)
+{
+    pthread_mutex_lock(&keycode_m);
+    uint8_t ret = keycode;
+    pthread_mutex_unlock(&keycode_m);
+
+    return ret;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2) return EXIT_FAILURE;
@@ -133,6 +147,8 @@ int main(int argc, char *argv[])
                         SCREEN_HOOK_OFFSET, SCREEN_HOOK_OFFSET+SCREEN_HOOK_SIZE);
     sfot_memhook_insert(MEMHOOK_TYPE_READ, random_memhook,
                         RANDOM_HOOK_OFFSET, RANDOM_HOOK_OFFSET+RANDOM_HOOK_SIZE);
+    sfot_memhook_insert(MEMHOOK_TYPE_READ, keycode_memhook,
+                        KEY_HOOK_OFFSET, KEY_HOOK_OFFSET+KEY_HOOK_SIZE);
 
     /* Check that the hook is there for good... */
     char buf[1024];
@@ -144,10 +160,32 @@ int main(int argc, char *argv[])
 
     /* SFOT is running in a thread.  Now let's poll for events here */
     while (SDL_WaitEvent(&event)) {
+        /* Magic to make CTRL-C work (just from console) */
+        if (event.type == SDL_QUIT) return EXIT_SUCCESS;
+
+        /* Magic combination to exit: LeftShift+Escape */
         if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE
                                       && event.key.keysym.mod == KMOD_LSHIFT) {
             return EXIT_SUCCESS;
         }
+
+        /* If a key is released, we just clear keycode global and go on*/
+        if (event.type == SDL_KEYUP) {
+            pthread_mutex_lock(&keycode_m);
+            keycode = 0;
+            pthread_mutex_unlock(&keycode_m);
+            continue;
+        }
+
+        /* Filter out non-keyboard events */
+        if (event.type != SDL_KEYDOWN) continue;
+
+        /* Filter out keypresses with modifiers, those should never reach the UI */
+        if (event.key.keysym.mod != KMOD_NONE) continue;
+
+        pthread_mutex_lock(&keycode_m);
+        keycode = event.key.keysym.sym;
+        pthread_mutex_unlock(&keycode_m);
     }
 
     BUG("END");
