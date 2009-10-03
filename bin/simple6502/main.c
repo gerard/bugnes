@@ -156,6 +156,9 @@ int main(int argc, char *argv[])
     lseek(fd, SCREEN_HOOK_OFFSET, SEEK_SET);
     read(fd, fb_memory, SCREEN_HOOK_SIZE);
     for (i = 0; i < SCREEN_HOOK_SIZE; i++) {
+        /* This speeds up the default case by avoiding SDL calls */
+        if (!fb_memory[i]) continue;
+
         screen_memhook(SCREEN_HOOK_OFFSET + i, &fb_memory[i]);
     }
     close(fd);
