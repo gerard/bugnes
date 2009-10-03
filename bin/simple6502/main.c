@@ -83,6 +83,8 @@ int main(int argc, char *argv[])
     if (argc < 2) return EXIT_FAILURE;
     int fd = open(argv[1], O_RDONLY);
     if (fd < 0) return EXIT_FAILURE;
+    uint8_t fb_memory[SCREEN_HOOK_SIZE];
+    uint16_t i;
 
     /* Initialize randomness */
     srandom(time(NULL));
@@ -105,6 +107,13 @@ int main(int argc, char *argv[])
     /* Load, set the RESET location */
     sfot_load(fd, 0, romsize);
     sfot_set_reset(0xC000);
+
+    /* Walk the FB memory in the ROM */
+    lseek(fd, SCREEN_HOOK_OFFSET, SEEK_SET);
+    read(fd, fb_memory, SCREEN_HOOK_SIZE);
+    for (i = 0; i < SCREEN_HOOK_SIZE; i++) {
+        screen_memhook(SCREEN_HOOK_OFFSET + i, &fb_memory[i]);
+    }
     close(fd);
 
     /* Callbacks: Video hook, random hook and step by step callback */
