@@ -23,10 +23,10 @@
 
 #include "cpu/sfot.h"
 
-#define SCREEN_OFFSET       0x200
-#define SCREEN_SIZE         0x400
-#define RANDOM_OFFSET       0xFE
-#define RANDOM_SIZE         0x1
+#define SCREEN_HOOK_OFFSET  0x200
+#define SCREEN_HOOK_SIZE    0x400
+#define RANDOM_HOOK_OFFSET  0xFE
+#define RANDOM_HOOK_SIZE    0x1
 
 #define PIXEL_SIZE          8
 
@@ -64,8 +64,8 @@ uint8_t screen_memhook(uint16_t addr, uint8_t *color)
 
     SDL_Rect pixel;
     pixel.w = pixel.h = PIXEL_SIZE;
-    pixel.x = ((addr - SCREEN_OFFSET) & 0x1f) * PIXEL_SIZE;
-    pixel.y = ((addr - SCREEN_OFFSET) >> 5) * PIXEL_SIZE;
+    pixel.x = ((addr - SCREEN_HOOK_OFFSET) & 0x1f) * PIXEL_SIZE;
+    pixel.y = ((addr - SCREEN_HOOK_OFFSET) >> 5) * PIXEL_SIZE;
     SDL_FillRect(screen, &pixel, rgb);
 
     SDL_Flip(screen);
@@ -110,9 +110,9 @@ int main(int argc, char *argv[])
     /* Callbacks: Video hook, random hook and step by step callback */
     sfot_install_step_cb(step_cb);
     sfot_memhook_insert(MEMHOOK_TYPE_WRITE, screen_memhook,
-                        SCREEN_OFFSET, SCREEN_OFFSET+SCREEN_SIZE);
+                        SCREEN_HOOK_OFFSET, SCREEN_HOOK_OFFSET+SCREEN_HOOK_SIZE);
     sfot_memhook_insert(MEMHOOK_TYPE_READ, random_memhook,
-                        RANDOM_OFFSET, RANDOM_OFFSET+RANDOM_SIZE);
+                        RANDOM_HOOK_OFFSET, RANDOM_HOOK_OFFSET+RANDOM_HOOK_SIZE);
 
     /* Check that the hook is there for good... */
     char buf[1024];
