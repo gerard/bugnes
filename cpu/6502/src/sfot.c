@@ -40,7 +40,6 @@ static void *cpu_thread(void *arg)
     if (pthread_equal(pthread_self(), thr)) {
         /* Running in a thread: close stdin */
         /* XXX: Probably we should also close stdout/stderr and comunicat via hooks */
-        printf("Running on a thread\n");
         close(0);
     }
 
