@@ -315,7 +315,7 @@ static void asm_ADC(addr_mode_t m)   { asm_arith_add(REG_ACC, REG_ACC, ADDR_MODE
 static void asm_SBC(addr_mode_t m)   { asm_arith_sub(REG_ACC, REG_ACC, ADDR_MODE_GET_VALUE(m)); }
 static void asm_CMP(addr_mode_t m)   { asm_arith_sub(REG_INVALID, REG_ACC, ADDR_MODE_GET_VALUE(m)); }
 static void asm_CPX(addr_mode_t m)   { asm_arith_sub(REG_INVALID, REG_X, ADDR_MODE_GET_VALUE(m)); }
-static void asm_CPY(addr_mode_t m)   { asm_arith_sub(REG_INVALID, REG_X, ADDR_MODE_GET_VALUE(m)); }
+static void asm_CPY(addr_mode_t m)   { asm_arith_sub(REG_INVALID, REG_Y, ADDR_MODE_GET_VALUE(m)); }
 
 /* Increments & Decrements */
 static void asm_INC(addr_mode_t m)   { asm_inc_mem(ADDR(m),  1); }
