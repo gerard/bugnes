@@ -87,7 +87,7 @@ uint8_t screen_memhook(uint16_t addr, uint8_t *color)
 
     SDL_Flip(screen);
 
-    return 0;
+    return *color;
 }
 
 uint8_t random_memhook(uint16_t addr, uint8_t *dummy)
