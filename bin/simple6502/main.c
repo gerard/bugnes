@@ -33,11 +33,13 @@
 
 #define PIXEL_SIZE          8
 
-#define BUG(s)                 fprintf(stderr, "%s: this is not supposed to happen: %s:%d\n", (s), __FUNCTION__, __LINE__)
+#define BUG(s)              fprintf(stderr, "%s: this is not supposed to happen [%s():%d]\n", (s), __FUNCTION__, __LINE__)
+#define EXCEPTION(s)        fprintf(stderr, "EXCEPTION: %s [%s():%d]\n", (s), __FUNCTION__, __LINE__)
 
 SDL_Surface *screen;
 uint8_t keycode;
 pthread_mutex_t keycode_m = PTHREAD_MUTEX_INITIALIZER;
+pthread_t main_thread;
 
 int step_cb(struct sfot_step_info *info)
 {
@@ -102,6 +104,18 @@ uint8_t keycode_memhook(uint16_t addr, uint8_t *dummy)
     return ret;
 }
 
+void excepthook(const char *s)
+{
+    EXCEPTION(s);
+
+    if (!pthread_equal(pthread_self(), main_thread)) {
+        fprintf(stderr, "CPU thread done\n");
+        pthread_exit(NULL);
+    } else {
+        exit(EXIT_SUCCESS);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2) return EXIT_FAILURE;
@@ -113,6 +127,11 @@ int main(int argc, char *argv[])
 
     /* Initialize randomness */
     srandom(time(NULL));
+
+    /* XXX: This is not nice, but this is a fast way to know if the callbacks
+     * are coming from the same thread or not
+     */
+    main_thread = pthread_self();
 
     /* SDL stuff */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -143,6 +162,7 @@ int main(int argc, char *argv[])
 
     /* Callbacks: Video hook, random hook and step by step callback */
     sfot_install_step_cb(step_cb);
+    sfot_excepthook_insert(EXCEPTHOOK_TYPE_BRK, excepthook);
     sfot_memhook_insert(MEMHOOK_TYPE_WRITE, screen_memhook,
                         SCREEN_HOOK_OFFSET, SCREEN_HOOK_OFFSET+SCREEN_HOOK_SIZE);
     sfot_memhook_insert(MEMHOOK_TYPE_READ, random_memhook,

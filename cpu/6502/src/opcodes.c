@@ -6,6 +6,7 @@
 
 #include "opcodes-private.h"
 #include "opcodes.h"
+#include "excepthooks.h"
 #include "core.h"
 #include "addr.h"
 #include "disas.h"
@@ -276,6 +277,7 @@ static void asm_shrot(uint8_t addr, short_reg_t reg, int direction, int fill)
 /**** Misc ****/
 static void asm_break()
 {
+    excepthook_check(EXCEPTHOOK_TYPE_BRK, "BRK");
     SET_PC(MEM_READ16(CPU_ADDR_BREAK));
 }
 

@@ -9,6 +9,11 @@ typedef enum {
     MEMHOOK_TYPE_MAX,
 } mh_type_t;
 
+typedef enum {
+    EXCEPTHOOK_TYPE_BRK,
+    EXCEPTHOOK_TYPE_MAX,
+} eh_type_t;
+
 /* Memory hook function.
  * Readers shouldn't expect anything but NULL on the "write" parameter.
  * Instead, they have to return the value to be given to userspace.
@@ -23,5 +28,14 @@ typedef uint8_t (* memhook_fun_t)(uint16_t addr, uint8_t *write);
 int sfot_memhook_i_insert(mh_type_t mh_type, memhook_fun_t mh_fun, char *mh_fun_name,
                      uint16_t addr_start, uint16_t addr_end);
 void sfot_memhook_dump(char *buf);
+
+
+/* Exception hook functions.
+ * This functions are executed on exceptions, like stack over/underflows and
+ * unhandled BRK or interrupts
+ */
+typedef void (* excepthook_fun_t)(const char *s);
+
+void sfot_excepthook_insert(eh_type_t eh_type, excepthook_fun_t eh_fun);
 
 #endif
