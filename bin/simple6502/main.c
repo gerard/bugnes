@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
 
         /* Magic combination to exit: LeftShift+Escape */
         if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE
-                                      && event.key.keysym.mod == KMOD_LSHIFT) {
+                                      && (event.key.keysym.mod & KMOD_LSHIFT)) {
             return EXIT_SUCCESS;
         }
 
