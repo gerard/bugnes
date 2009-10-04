@@ -247,7 +247,7 @@ static void asm_arith_sub(short_reg_t dest, short_reg_t source, uint8_t value)
 /* This is quite ugly: we don't know if we are given a memory address or a
  * register.  So first we check if addr is valid.
  */
-static void asm_shrot(uint8_t addr, short_reg_t reg, int direction, int fill)
+static void asm_shrot(uint16_t addr, short_reg_t reg, int direction, int fill)
 {
     assert(abs(direction) == 1);
     assert(!fill | (fill == 1));
