@@ -47,9 +47,11 @@ void MEM_WRITE16(uint16_t addr, uint16_t v)
 
 void MEM_INC(uint16_t addr, int8_t v)
 {
-    /* We don't support this to simplify things for now */
-    assert(!memhook_check(MEMHOOK_TYPE_WRITE, addr));
-    mem[addr] += v;
+    memhook_fun_t mh_f;
+    mh_f = memhook_check(MEMHOOK_TYPE_WRITE, addr);
+
+    if (!mh_f) mem[addr] += v;
+    else mem[addr] = mh_f(addr, mem[addr] + v);
 }
 
 /**
