@@ -15,7 +15,7 @@ int step_cb(struct sfot_step_info *info)
     return 0;
 }
 
-uint8_t memhook_on_2002(uint16_t addr, uint8_t *dummy)
+uint8_t memhook_on_2002(uint16_t addr, uint8_t dummy)
 {
     printf("Reading 0x%04X\n", addr);
     return 0;

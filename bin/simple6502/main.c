@@ -56,11 +56,11 @@ int step_cb(struct sfot_step_info *info)
     return 0;
 }
 
-uint8_t screen_memhook(uint16_t addr, uint8_t *color)
+uint8_t screen_memhook(uint16_t addr, uint8_t color)
 {
     uint32_t rgb = 0;
 
-    switch (*color & 0xF) {
+    switch (color & 0xF) {
     case 0x0: rgb = SDL_MapRGB(screen->format,    0,    0,    0); break;
     case 0x1: rgb = SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF); break;
     case 0x2: rgb = SDL_MapRGB(screen->format, 0x88,    0,    0); break;
@@ -87,15 +87,15 @@ uint8_t screen_memhook(uint16_t addr, uint8_t *color)
 
     SDL_Flip(screen);
 
-    return *color;
+    return color;
 }
 
-uint8_t random_memhook(uint16_t addr, uint8_t *dummy)
+uint8_t random_memhook(uint16_t addr, uint8_t dummy)
 {
     return random() & 0xFF;
 }
 
-uint8_t keycode_memhook(uint16_t addr, uint8_t *dummy)
+uint8_t keycode_memhook(uint16_t addr, uint8_t dummy)
 {
     pthread_mutex_lock(&keycode_m);
     uint8_t ret = keycode;
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
         /* This speeds up the default case by avoiding SDL calls */
         if (!fb_memory[i]) continue;
 
-        screen_memhook(SCREEN_HOOK_OFFSET + i, &fb_memory[i]);
+        screen_memhook(SCREEN_HOOK_OFFSET + i, fb_memory[i]);
     }
     close(fd);
 

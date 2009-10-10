@@ -22,7 +22,7 @@ typedef enum {
  * something with the actual memory location, they can access it through the
  * "write" parameter.
  */
-typedef uint8_t (* memhook_fun_t)(uint16_t addr, uint8_t *write);
+typedef uint8_t (* memhook_fun_t)(uint16_t addr, uint8_t write);
 
 #define sfot_memhook_insert(type, mh_f, start, end) sfot_memhook_i_insert(type, mh_f, #mh_f, start, end)
 int sfot_memhook_i_insert(mh_type_t mh_type, memhook_fun_t mh_fun, char *mh_fun_name,

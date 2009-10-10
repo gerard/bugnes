@@ -21,7 +21,7 @@ uint8_t MEM_READ(uint16_t addr)
     memhook_fun_t mh_f;
     mh_f = memhook_check(MEMHOOK_TYPE_READ, addr);
 
-    return mh_f ? mh_f(addr, NULL) : mem[addr];
+    return mh_f ? mh_f(addr, 0) : mem[addr];
 }
 
 /* Note that non-aligned memory access is fine */
@@ -36,7 +36,7 @@ void MEM_WRITE(uint16_t addr, uint8_t v)
     mh_f = memhook_check(MEMHOOK_TYPE_WRITE, addr);
 
     if (!mh_f) mem[addr] = v;
-    else mem[addr] = mh_f(addr, &v);
+    else mem[addr] = mh_f(addr, v);
 }
 
 void MEM_WRITE16(uint16_t addr, uint16_t v)
