@@ -22,7 +22,7 @@ cd `dirname $0`
 
 # Code generation starts here
 echo "cpu 6502" >> $CRASM
-printf "\t* = \$C000\n" >> $CRASM
+printf "\t* = \$600\n" >> $CRASM
 # Declare lo and hi labels in the cpy header
 grep '#<' $ASM | sed 's/^.*#<\([a-zA-Z0-9]*\)/\t\1lo = \1 \& 0xFF/' >> $CRASM
 grep '#>' $ASM | sed 's/^.*#>\([a-zA-Z0-9]*\)/\t\1hi = (\1 \& 0xFF00) >> 8/' >> $CRASM

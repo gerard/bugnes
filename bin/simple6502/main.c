@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 
     /* Load, set the RESET location */
     sfot_load(fd, 0, romsize);
-    sfot_set_reset(0xC000);
+    sfot_set_reset(0x600);
 
     /* Walk the FB memory in the ROM */
     lseek(fd, SCREEN_HOOK_OFFSET, SEEK_SET);
