@@ -94,18 +94,20 @@ void flags_update_logic_overflow(uint8_t value)
     if (value & (1 << 6)) SET_FLAG(FLAG_V, 1);
 }
 
-void flags_update_arith_overflow(int8_t a, int8_t b, int factor)
+void flags_update_arith_overflow(int8_t a, int8_t b, int8_t factor)
 {
     assert(abs(factor) == 1);
     int16_t long_value = (int16_t)a + (int16_t)(b*factor);
-    if (long_value == (int16_t)(a + (b*factor))) SET_FLAG(FLAG_V, 1);
+    if (long_value != (int16_t)(a + (b*factor))) SET_FLAG(FLAG_V, 1);
+    else SET_FLAG(FLAG_V, 0);
 }
 
-void flags_update_arith_carry(uint8_t a, uint8_t b, int factor)
+void flags_update_arith_carry(uint8_t a, uint8_t b, int8_t factor)
 {
     assert(abs(factor) == 1);
     uint16_t long_value = (uint16_t)a + (uint16_t)(b*factor);
-    if (long_value == (uint16_t)(a + (b*factor))) SET_FLAG(FLAG_C, 1);
+    if (long_value != (uint16_t)(a + (b*factor))) SET_FLAG(FLAG_C, 1);
+    else SET_FLAG(FLAG_C, 0);
 }
 
 void flags_update_shrot_carry(uint8_t value, int direction, int fill)
