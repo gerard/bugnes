@@ -4,3 +4,5 @@ roms
 a.out
 *.swp
 *.bin
+cscope.out
+test/6502asm/*.asm
