@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -39,6 +40,33 @@ SDL_Surface *screen;
 uint8_t keycode;
 pthread_mutex_t keycode_m = PTHREAD_MUTEX_INITIALIZER;
 pthread_t main_thread;
+
+struct timeval tv_startup;
+struct timeval tv_teardown;
+
+/* Someday move this to another place */
+struct timeval tv_sub(struct timeval tv1, struct timeval tv2)
+{
+    struct timeval tv;
+
+    tv.tv_sec = tv1.tv_sec - tv2.tv_sec;
+    tv.tv_usec = tv1.tv_usec - tv2.tv_usec;
+
+    if (tv.tv_usec < 0) {
+        tv.tv_sec  -= 1;
+        tv.tv_usec += 1000000;
+    }
+
+    return tv;
+}
+
+/* User needs to free the returned string! */
+char *tv_print(struct timeval tv)
+{
+    char *ret;
+    asprintf(&ret, "%d.%06d", tv.tv_sec, tv.tv_usec);
+    return ret;
+}
 
 int step_cb(struct sfot_step_info *info)
 {
@@ -106,6 +134,11 @@ uint8_t keycode_memhook(uint16_t addr, uint8_t dummy)
 void excepthook(const char *s)
 {
     EXCEPTION(s);
+    gettimeofday(&tv_teardown, NULL);
+
+    char *tv_printed = tv_print(tv_sub(tv_teardown, tv_startup));
+    fprintf(stderr, "Total run time: %s\n", tv_printed);
+    free(tv_printed);
 
     if (!pthread_equal(pthread_self(), main_thread)) {
         fprintf(stderr, "CPU thread done\n");
@@ -178,6 +211,7 @@ int main(int argc, char *argv[])
     printf(buf);
 
     /* Crossing fingers... */
+    gettimeofday(&tv_startup, NULL);
     sfot_poweron(SFOT_RUN_THREADED);
 
     /* SFOT is running in a thread.  Now let's poll for events here */
