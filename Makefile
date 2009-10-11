@@ -8,7 +8,12 @@ export BUGNES_ROOT=$(PWD)
 # Order is important to get the dependencies right
 SUBDIRS=cpu bin
 
-all: subdirs
+all: subdirs cscope.out
+
+cscope.out:
+	cscope -Rb
+
 clean: subdirs-clean
+	$(RM) cscope.out
 
 include $(MAKE_INCDIR)/tail.mk
