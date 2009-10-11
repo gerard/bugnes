@@ -94,6 +94,7 @@ void flags_update_logic_overflow(uint8_t value)
     if (value & (1 << 6)) SET_FLAG(FLAG_V, 1);
 }
 
+/* This probably doesn't even work, so have a look later or write a testcase */
 void flags_update_arith_overflow(int8_t a, int8_t b, int8_t factor)
 {
     assert(abs(factor) == 1);
@@ -102,12 +103,18 @@ void flags_update_arith_overflow(int8_t a, int8_t b, int8_t factor)
     else SET_FLAG(FLAG_V, 0);
 }
 
-void flags_update_arith_carry(uint8_t a, uint8_t b, int8_t factor)
+void flags_update_arith_adc_carry(uint8_t a, uint8_t b)
 {
-    assert(abs(factor) == 1);
-    uint16_t long_value = (uint16_t)a + (uint16_t)(b*factor);
-    if (long_value != (uint16_t)(a + (b*factor))) SET_FLAG(FLAG_C, 1);
+    uint16_t long_value = (uint16_t)a + (uint16_t)b + GET_FLAG(FLAG_C);
+    if (long_value > 255) SET_FLAG(FLAG_C, 1);
     else SET_FLAG(FLAG_C, 0);
+}
+
+void flags_update_arith_sbc_carry(uint8_t a, uint8_t b)
+{
+    int16_t long_value = (int16_t)a - (int16_t)b - !GET_FLAG(FLAG_C);
+    if (long_value < 0) SET_FLAG(FLAG_C, 0);
+    else SET_FLAG(FLAG_C, 1);
 }
 
 void flags_update_shrot_carry(uint8_t value, int direction, int fill)
@@ -223,10 +230,10 @@ static void asm_logic_ora(short_reg_t reg, uint8_t value)
 /**** Arithmetic Ops ****/
 static void asm_arith_add(short_reg_t dest, short_reg_t source, uint8_t value)
 {
-    uint8_t result = GET_SREG(source) + value;
+    uint8_t result = GET_SREG(source) + value + GET_FLAG(FLAG_C);
 
     flags_update_basic_by_value(result);
-    flags_update_arith_carry(GET_SREG(source), value, 1);
+    flags_update_arith_adc_carry(GET_SREG(source), value);
     flags_update_arith_overflow(GET_SREG(source), value, 1);
 
     SET_SREG(dest, result);
@@ -237,8 +244,11 @@ static void asm_arith_sub(short_reg_t dest, short_reg_t source, uint8_t value)
 {
     uint8_t result = GET_SREG(source) - value;
 
+    /* CMP operations don't substract the carry bit */
+    if (source != REG_INVALID) value -= GET_FLAG(FLAG_C);
+
     flags_update_basic_by_value(result);
-    flags_update_arith_carry(GET_SREG(source), value, -1);
+    flags_update_arith_sbc_carry(GET_SREG(source), value);
     if (source != REG_INVALID) flags_update_arith_overflow(GET_SREG(source), value, -1);
 
     SET_SREG(dest, result);
