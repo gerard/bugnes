@@ -255,6 +255,7 @@ static void asm_shrot(uint16_t addr, short_reg_t reg, int direction, int fill)
     assert(!fill | (fill == 1));
 
     uint8_t value = ADDR_VALID(addr) ? MEM_READ(addr) : GET_SREG(reg);
+    flags_update_shrot_carry(value, direction, fill);
 
     if (direction > 0) {
         value <<= 1;
@@ -263,8 +264,6 @@ static void asm_shrot(uint16_t addr, short_reg_t reg, int direction, int fill)
         value >>= 1;
         value |= (fill << 7);
     }
-
-    flags_update_shrot_carry(value, direction, fill);
 
     if (ADDR_VALID(addr)) {
         MEM_WRITE(addr, value);
