@@ -86,8 +86,17 @@ int step_cb(struct sfot_step_info *info)
 uint8_t screen_memhook(uint16_t addr, uint8_t color)
 {
     uint32_t rgb = 0;
+    static uint8_t framebuffer[0x400];
+    uint8_t current_color = framebuffer[addr - SCREEN_HOOK_OFFSET];
 
-    switch (color & 0xF) {
+    color = color & 0xF;
+
+    /* If there is no change in color, just return early and avoid any work */
+    if (current_color == color) return color;
+
+    framebuffer[addr - SCREEN_HOOK_OFFSET] = color;
+
+    switch (color) {
     case 0x0: rgb = SDL_MapRGB(screen->format,    0,    0,    0); break;
     case 0x1: rgb = SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF); break;
     case 0x2: rgb = SDL_MapRGB(screen->format, 0x88,    0,    0); break;
