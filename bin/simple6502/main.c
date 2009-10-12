@@ -37,6 +37,8 @@
 #define EXCEPTION(s)        fprintf(stderr, "EXCEPTION: %s [%s():%d]\n", (s), __FUNCTION__, __LINE__)
 
 SDL_Surface *screen;
+SDL_TimerID refresh_timer;
+static uint8_t framebuffer[0x400];
 uint8_t keycode;
 pthread_mutex_t keycode_m = PTHREAD_MUTEX_INITIALIZER;
 pthread_t main_thread;
@@ -72,58 +74,57 @@ int step_cb(struct sfot_step_info *info)
 {
     printf("%s\n", info->opcode_decoded);
 
-    /* For some reason, if we start flooding the stdout, stdin looses all
-     * tracks of what "being responsive" means.
-     * We introduce a small delay here so SDL_WaitEvents gets a chance to see
-     * the keypresses.  Not nice for performance; anyway, you shouldn't be
-     * using this callback at all if you want performace.
-     */
-    usleep(10);
+    /* We sleep here, because otherwise this goes too fast */
+    /* XXX: Do some timing and have a steady framerate in every single cpu */
+    usleep(1);
 
     return 0;
 }
 
-uint8_t screen_memhook(uint16_t addr, uint8_t color)
-{
-    uint32_t rgb = 0;
-    static uint8_t framebuffer[0x400];
-    uint8_t current_color = framebuffer[addr - SCREEN_HOOK_OFFSET];
+/* SDL Callback Update the screen */
+uint32_t screen_update(uint32_t interval, void *dontcare) {
+    uint32_t rgb;
+    int i;
 
-    color = color & 0xF;
+    for (i = 0; i < 0x400; i++) {
+        switch (framebuffer[i]) {
+        case 0x0: rgb = SDL_MapRGB(screen->format,    0,    0,    0); break;
+        case 0x1: rgb = SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF); break;
+        case 0x2: rgb = SDL_MapRGB(screen->format, 0x88,    0,    0); break;
+        case 0x3: rgb = SDL_MapRGB(screen->format, 0xAA, 0xFF, 0xEE); break;
+        case 0x4: rgb = SDL_MapRGB(screen->format, 0xCC, 0x44, 0xCC); break;
+        case 0x5: rgb = SDL_MapRGB(screen->format,    0, 0xCC, 0x55); break;
+        case 0x6: rgb = SDL_MapRGB(screen->format,    0,    0, 0xAA); break;
+        case 0x7: rgb = SDL_MapRGB(screen->format, 0xEE, 0xEE, 0x77); break;
+        case 0x8: rgb = SDL_MapRGB(screen->format, 0xDD, 0x88, 0x55); break;
+        case 0x9: rgb = SDL_MapRGB(screen->format, 0x66, 0x44,    0); break;
+        case 0xA: rgb = SDL_MapRGB(screen->format, 0xFF, 0x77, 0x77); break;
+        case 0xB: rgb = SDL_MapRGB(screen->format, 0x33, 0x33, 0x33); break;
+        case 0xC: rgb = SDL_MapRGB(screen->format, 0x77, 0x77, 0x77); break;
+        case 0xD: rgb = SDL_MapRGB(screen->format, 0xAA, 0xFF, 0x77); break;
+        case 0xE: rgb = SDL_MapRGB(screen->format, 0x00, 0x88, 0xFF); break;
+        case 0xF: rgb = SDL_MapRGB(screen->format, 0xBB, 0xBB, 0xBB); break;
+        }
 
-    /* If there is no change in color, just return early and avoid any work */
-    if (current_color == color) return color;
-
-    framebuffer[addr - SCREEN_HOOK_OFFSET] = color;
-
-    switch (color) {
-    case 0x0: rgb = SDL_MapRGB(screen->format,    0,    0,    0); break;
-    case 0x1: rgb = SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF); break;
-    case 0x2: rgb = SDL_MapRGB(screen->format, 0x88,    0,    0); break;
-    case 0x3: rgb = SDL_MapRGB(screen->format, 0xAA, 0xFF, 0xEE); break;
-    case 0x4: rgb = SDL_MapRGB(screen->format, 0xCC, 0x44, 0xCC); break;
-    case 0x5: rgb = SDL_MapRGB(screen->format,    0, 0xCC, 0x55); break;
-    case 0x6: rgb = SDL_MapRGB(screen->format,    0,    0, 0xAA); break;
-    case 0x7: rgb = SDL_MapRGB(screen->format, 0xEE, 0xEE, 0x77); break;
-    case 0x8: rgb = SDL_MapRGB(screen->format, 0xDD, 0x88, 0x55); break;
-    case 0x9: rgb = SDL_MapRGB(screen->format, 0x66, 0x44,    0); break;
-    case 0xA: rgb = SDL_MapRGB(screen->format, 0xFF, 0x77, 0x77); break;
-    case 0xB: rgb = SDL_MapRGB(screen->format, 0x33, 0x33, 0x33); break;
-    case 0xC: rgb = SDL_MapRGB(screen->format, 0x77, 0x77, 0x77); break;
-    case 0xD: rgb = SDL_MapRGB(screen->format, 0xAA, 0xFF, 0x77); break;
-    case 0xE: rgb = SDL_MapRGB(screen->format, 0x00, 0x88, 0xFF); break;
-    case 0xF: rgb = SDL_MapRGB(screen->format, 0xBB, 0xBB, 0xBB); break;
+        SDL_Rect pixel;
+        pixel.w = pixel.h = PIXEL_SIZE;
+        pixel.x = (i & 0x1f) * PIXEL_SIZE;
+        pixel.y = (i >> 5) * PIXEL_SIZE;
+        SDL_FillRect(screen, &pixel, rgb);
     }
-
-    SDL_Rect pixel;
-    pixel.w = pixel.h = PIXEL_SIZE;
-    pixel.x = ((addr - SCREEN_HOOK_OFFSET) & 0x1f) * PIXEL_SIZE;
-    pixel.y = ((addr - SCREEN_HOOK_OFFSET) >> 5) * PIXEL_SIZE;
-    SDL_FillRect(screen, &pixel, rgb);
 
     SDL_Flip(screen);
 
-    return color;
+    /* SDL says to return this... whatever */
+    return interval;
+}
+
+/* This is a hook from the CPU, so it should be fast.  Store the value and
+ * leave the work for later (screen_update()).
+ */
+uint8_t screen_memhook(uint16_t addr, uint8_t color)
+{
+    return framebuffer[addr - SCREEN_HOOK_OFFSET] = color & 0xF;
 }
 
 uint8_t random_memhook(uint16_t addr, uint8_t dummy)
@@ -143,6 +144,11 @@ uint8_t keycode_memhook(uint16_t addr, uint8_t dummy)
 void excepthook(const char *s)
 {
     EXCEPTION(s);
+
+    /* Remove the timer and do the last refresh */
+    SDL_RemoveTimer(refresh_timer);
+    screen_update(1, NULL);
+
     gettimeofday(&tv_teardown, NULL);
 
     char *tv_printed = tv_print(tv_sub(tv_teardown, tv_startup));
@@ -175,7 +181,7 @@ int main(int argc, char *argv[])
     main_thread = pthread_self();
 
     /* SDL stuff */
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
         fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
         return EXIT_FAILURE;
     }
@@ -218,6 +224,9 @@ int main(int argc, char *argv[])
     char buf[1024];
     sfot_memhook_dump(buf);
     printf(buf);
+
+    /* Add timer for screen update 30 should get us around 30 FPS */
+    refresh_timer = SDL_AddTimer(30, screen_update, NULL);
 
     /* Crossing fingers... */
     gettimeofday(&tv_startup, NULL);
