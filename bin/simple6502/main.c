@@ -66,7 +66,7 @@ struct timeval tv_sub(struct timeval tv1, struct timeval tv2)
 char *tv_print(struct timeval tv)
 {
     char *ret;
-    asprintf(&ret, "%d.%06d", tv.tv_sec, tv.tv_usec);
+    asprintf(&ret, "%ld.%06ld", tv.tv_sec, tv.tv_usec);
     return ret;
 }
 
