@@ -4,7 +4,7 @@
  *
  * The system has a framebuffer mapped starting at SCREEN_OFFSET with
  * a len of SCREEN_SIZE.
- * Altough not implemented yet, it also has 2 special memory mapped registers:
+ * It also has 2 special memory mapped registers:
  *   - $FE: Random Generator
  *   - $FF: Last key pressed
  */
