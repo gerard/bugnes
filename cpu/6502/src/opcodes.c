@@ -299,7 +299,7 @@ static void asm_shrot(uint16_t addr, short_reg_t reg, int direction, int fill)
 static void asm_break()
 {
     excepthook_check(EXCEPTHOOK_TYPE_BRK, "BRK");
-    SET_PC(MEM_READ16(CPU_ADDR_BREAK));
+    branch_status(MEM_READ16(CPU_ADDR_BREAK));
 }
 
 /* Move: Load/Store */
