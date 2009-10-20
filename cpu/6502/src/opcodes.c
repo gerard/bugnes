@@ -117,6 +117,12 @@ void flags_update_arith_sbc_carry(uint8_t a, uint8_t b)
     else SET_FLAG(FLAG_C, 1);
 }
 
+void flags_update_arith_cmp_carry(uint8_t a, uint8_t b)
+{
+    if (a >= b) SET_FLAG(FLAG_C, 1);
+    else SET_FLAG(FLAG_C, 0);
+}
+
 void flags_update_shrot_carry(uint8_t value, int direction, int fill)
 {
     assert(abs(direction) == 1);
@@ -245,11 +251,15 @@ static void asm_arith_sub(short_reg_t dest, short_reg_t source, uint8_t value)
     uint8_t result = GET_SREG(source) - value;
 
     /* CMP operations don't substract the carry bit */
-    if (source != REG_INVALID) value -= GET_FLAG(FLAG_C);
+    if (dest != REG_INVALID) result -= !GET_FLAG(FLAG_C);
 
     flags_update_basic_by_value(result);
-    flags_update_arith_sbc_carry(GET_SREG(source), value);
-    if (source != REG_INVALID) flags_update_arith_overflow(GET_SREG(source), value, -1);
+    if (dest != REG_INVALID) {
+        flags_update_arith_sbc_carry(GET_SREG(source), value);
+        flags_update_arith_overflow(GET_SREG(source), value, -1);
+    } else {
+        flags_update_arith_cmp_carry(GET_SREG(source), value);
+    }
 
     SET_SREG(dest, result);
 }
