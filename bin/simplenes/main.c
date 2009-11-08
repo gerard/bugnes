@@ -15,10 +15,10 @@ int step_cb(struct sfot_step_info *info)
     return 0;
 }
 
-uint8_t memhook_on_2002(uint16_t addr, uint8_t dummy)
+uint8_t memhook_PPU_status(uint16_t addr, uint8_t dummy)
 {
-    printf("Reading 0x%04X\n", addr);
-    return 0;
+    /* Suppose for now that VBlank and Hit flag are up always */
+    return 0xC0;
 }
 
 int main(int argc, char *argv[])
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     close(fd);
 
     sfot_install_step_cb(step_cb);
-    sfot_memhook_insert(MEMHOOK_TYPE_READ, memhook_on_2002, 0x2002, 0x2003);
+    sfot_memhook_insert(MEMHOOK_TYPE_READ, memhook_PPU_status, 0x2002, 0x2003);
     sfot_memhook_dump(buf);
     printf(buf);
 
