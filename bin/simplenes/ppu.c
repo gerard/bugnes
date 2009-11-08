@@ -39,7 +39,7 @@ static uint8_t memwrite(uint8_t value)
 }
 
 
-uint8_t PPU_cr1_read(uint16_t addr, uint8_t dummy)
+uint8_t PPU_cr1_read(uint16_t addr)
 {
     return reg_cr1;
 }
@@ -51,7 +51,7 @@ uint8_t PPU_cr1_write(uint16_t addr, uint8_t value)
     return value;
 }
 
-uint8_t PPU_cr2_read(uint16_t addr, uint8_t dummy)
+uint8_t PPU_cr2_read(uint16_t addr)
 {
     return reg_cr2;
 }
@@ -63,7 +63,7 @@ uint8_t PPU_cr2_write(uint16_t addr, uint8_t value)
     return value;
 }
 
-uint8_t PPU_status_read(uint16_t addr, uint8_t dummy)
+uint8_t PPU_status_read(uint16_t addr)
 {
     /* Suppose for now that VBlank and Hit flag are up always */
     return 0xC0;
@@ -88,7 +88,7 @@ uint8_t PPU_memaddr_write(uint16_t addr, uint8_t value)
     return value;
 }
 
-uint8_t PPU_memdata_read(uint16_t addr, uint8_t dummy)
+uint8_t PPU_memdata_read(uint16_t addr)
 {
     if (memaddr_just_setted) {
         memaddr_just_setted = 0;

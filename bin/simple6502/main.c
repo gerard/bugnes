@@ -27,9 +27,7 @@
 #define SCREEN_HOOK_OFFSET  0x200
 #define SCREEN_HOOK_SIZE    0x400
 #define RANDOM_HOOK_OFFSET  0xFE
-#define RANDOM_HOOK_SIZE    0x1
 #define KEY_HOOK_OFFSET     0xFF
-#define KEY_HOOK_SIZE       0x1
 
 #define PIXEL_SIZE          8
 
@@ -127,12 +125,12 @@ uint8_t screen_memhook(uint16_t addr, uint8_t color)
     return framebuffer[addr - SCREEN_HOOK_OFFSET] = color & 0xF;
 }
 
-uint8_t random_memhook(uint16_t addr, uint8_t dummy)
+uint8_t random_memhook(uint16_t addr)
 {
     return random() & 0xFF;
 }
 
-uint8_t keycode_memhook(uint16_t addr, uint8_t dummy)
+uint8_t keycode_memhook(uint16_t addr)
 {
     pthread_mutex_lock(&keycode_m);
     uint8_t ret = keycode;
@@ -213,12 +211,10 @@ int main(int argc, char *argv[])
     /* Callbacks: Video hook, random hook and step by step callback */
     sfot_install_step_cb(step_cb);
     sfot_excepthook_insert(EXCEPTHOOK_TYPE_BRK, excepthook);
-    sfot_memhook_insert(MEMHOOK_TYPE_WRITE, screen_memhook,
-                        SCREEN_HOOK_OFFSET, SCREEN_HOOK_OFFSET+SCREEN_HOOK_SIZE);
-    sfot_memhook_insert(MEMHOOK_TYPE_READ, random_memhook,
-                        RANDOM_HOOK_OFFSET, RANDOM_HOOK_OFFSET+RANDOM_HOOK_SIZE);
-    sfot_memhook_insert(MEMHOOK_TYPE_READ, keycode_memhook,
-                        KEY_HOOK_OFFSET, KEY_HOOK_OFFSET+KEY_HOOK_SIZE);
+    sfot_memhook_insert_write(screen_memhook, SCREEN_HOOK_OFFSET,
+                              SCREEN_HOOK_OFFSET+SCREEN_HOOK_SIZE);
+    sfot_memhook_insert_read_simple(random_memhook, RANDOM_HOOK_OFFSET);
+    sfot_memhook_insert_read_simple(keycode_memhook, KEY_HOOK_OFFSET);
 
     /* Check that the hook is there for good... */
     char buf[1024];

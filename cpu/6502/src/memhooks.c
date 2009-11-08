@@ -6,6 +6,12 @@
 
 /* MEMORY HOOKS */
 
+typedef enum {
+    MEMHOOK_TYPE_READ,
+    MEMHOOK_TYPE_WRITE,
+    MEMHOOK_TYPE_MAX,
+} mh_type_t;
+
 /* XXX: Nasty #ifdefs to take out the debug thingies? Doesn't seem worth it
  * right now
  */
@@ -23,8 +29,8 @@ struct memhook {
  */
 static struct memhook *all_mh[MEMHOOK_TYPE_MAX];
 
-int sfot_memhook_i_insert(mh_type_t mh_type, memhook_fun_t mh_fun, char *mh_fun_name,
-                          uint16_t addr_start, uint16_t addr_end)
+static int insert(mh_type_t mh_type, memhook_fun_t mh_fun, char *mh_fun_name,
+                  uint16_t addr_start, uint16_t addr_end)
 {
     assert(addr_start < addr_end);
 
@@ -81,6 +87,42 @@ int sfot_memhook_i_insert(mh_type_t mh_type, memhook_fun_t mh_fun, char *mh_fun_
     return 0;
 }
 
+static memhook_fun_t check(mh_type_t mh_type, uint16_t addr)
+{
+    struct memhook *mh_list = all_mh[mh_type];
+
+    while (mh_list) {
+        if (mh_list->addr_start <= addr && addr < mh_list->addr_end) {
+            return mh_list->memhook_f;
+        } else mh_list = mh_list->next;
+    }
+
+    memhook_fun_t dummy;
+    memset(&dummy, 0, sizeof(memhook_fun_t));
+
+    return dummy;
+}
+
+
+/* INTERFACES for CPU users */
+
+/* These are actually wrappers for the real insert:   we just set the hook
+ * union and pass it to *the real thing* */
+int sfot_memhook_i_insert_read(memhook_read_fun_t mh_fun, char *mh_fun_name,
+                               uint16_t addr_start, uint16_t addr_end)
+{
+    memhook_fun_t hook = { .read = mh_fun };
+    return insert(MEMHOOK_TYPE_READ, hook, mh_fun_name, addr_start, addr_end);
+}
+
+int sfot_memhook_i_insert_write(memhook_write_fun_t mh_fun, char *mh_fun_name,
+                                uint16_t addr_start, uint16_t addr_end)
+{
+    memhook_fun_t hook = { .write = mh_fun };
+    return insert(MEMHOOK_TYPE_WRITE, hook, mh_fun_name, addr_start, addr_end);
+}
+
+/* Debugging: Output all the memhooks registered */
 void sfot_memhook_dump(char *buf)
 {
     int count;
@@ -97,15 +139,11 @@ void sfot_memhook_dump(char *buf)
     }
 }
 
-memhook_fun_t memhook_check(mh_type_t mh_type, uint16_t addr) 
-{
-    struct memhook *mh_list = all_mh[mh_type];
+/* INTERFACES to self */
+memhook_fun_t memhook_check_read(uint16_t addr) {
+    return check(MEMHOOK_TYPE_READ, addr);
+}
 
-    while (mh_list) {
-        if (mh_list->addr_start <= addr && addr < mh_list->addr_end) {
-            return mh_list->memhook_f;
-        } else mh_list = mh_list->next;
-    }
-
-    return NULL;
+memhook_fun_t memhook_check_write(uint16_t addr) {
+    return check(MEMHOOK_TYPE_WRITE, addr);
 }
