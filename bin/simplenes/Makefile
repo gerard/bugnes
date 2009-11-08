@@ -1,4 +1,4 @@
-SOURCES=main.c
+SOURCES=main.c ppu.c
 OBJECTS=$(SOURCES:.c=.o)
 SFOT_LIB=$(BUGNES_ROOT)/cpu/6502/libsfot.a
 TARGET=a.out
