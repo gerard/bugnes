@@ -78,6 +78,17 @@ int sfot_load(int fd, uint16_t offset, uint16_t len)
     return bytes_read;
 }
 
+int sfot_load_stream(uint8_t *s, uint16_t offset, uint16_t len)
+{
+    int i;
+
+    for (i = offset; i < offset+len; i++) {
+        MEM_WRITE(i, s[i-offset]);
+    }
+
+    return len;
+}
+
 void sfot_set_reset(uint16_t val)
 {
     MEM_WRITE16(CPU_ADDR_RESET, val);

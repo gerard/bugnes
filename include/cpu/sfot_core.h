@@ -55,6 +55,7 @@ sfot_step_cb sfot_install_step_cb(sfot_step_cb step_cb);
 void sfot_set_reset(uint16_t val);
 
 int sfot_load(int fd, uint16_t offset, uint16_t len);
+int sfot_load_stream(uint8_t *s, uint16_t offset, uint16_t len);
 void sfot_poweron();
 
 #endif
