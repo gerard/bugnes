@@ -19,8 +19,11 @@ static uint8_t *stack = &mem[0x100];
 uint8_t MEM_READ(uint16_t addr)
 {
     memhook_fun_t mh_f;
-    mh_f = memhook_check_read(addr);
 
+    mh_f = memhook_check_transl(addr);
+    if (mh_f.transl) addr = mh_f.transl(addr);
+
+    mh_f = memhook_check_read(addr);
     return mh_f.read ? mh_f.read(addr) : mem[addr];
 }
 
@@ -33,8 +36,11 @@ uint16_t MEM_READ16(uint16_t addr)
 void MEM_WRITE(uint16_t addr, uint8_t v)
 {
     memhook_fun_t mh_f;
-    mh_f = memhook_check_write(addr);
 
+    mh_f = memhook_check_transl(addr);
+    if (mh_f.transl) addr = mh_f.transl(addr);
+
+    mh_f = memhook_check_write(addr);
     if (!mh_f.write) mem[addr] = v;
     else mem[addr] = mh_f.write(addr, v);
 }
@@ -48,8 +54,11 @@ void MEM_WRITE16(uint16_t addr, uint16_t v)
 void MEM_INC(uint16_t addr, int8_t v)
 {
     memhook_fun_t mh_f;
-    mh_f = memhook_check_write(addr);
 
+    mh_f = memhook_check_transl(addr);
+    if (mh_f.transl) addr = mh_f.transl(addr);
+
+    mh_f = memhook_check_write(addr);
     if (!mh_f.write) mem[addr] += v;
     else mem[addr] = mh_f.write(addr, mem[addr] + v);
 }

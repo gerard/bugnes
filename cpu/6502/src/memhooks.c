@@ -9,6 +9,7 @@
 typedef enum {
     MEMHOOK_TYPE_READ,
     MEMHOOK_TYPE_WRITE,
+    MEMHOOK_TYPE_TRANSL,
     MEMHOOK_TYPE_MAX,
 } mh_type_t;
 
@@ -122,6 +123,13 @@ int sfot_memhook_i_insert_write(memhook_write_fun_t mh_fun, char *mh_fun_name,
     return insert(MEMHOOK_TYPE_WRITE, hook, mh_fun_name, addr_start, addr_end);
 }
 
+int sfot_memhook_i_insert_transl(memhook_transl_fun_t mh_fun, char *mh_fun_name,
+                                 uint16_t addr_start, uint16_t addr_end)
+{
+    memhook_fun_t hook = { .transl = mh_fun };
+    return insert(MEMHOOK_TYPE_TRANSL, hook, mh_fun_name, addr_start, addr_end);
+}
+
 /* Debugging: Output all the memhooks registered */
 void sfot_memhook_dump(char *buf)
 {
@@ -146,4 +154,8 @@ memhook_fun_t memhook_check_read(uint16_t addr) {
 
 memhook_fun_t memhook_check_write(uint16_t addr) {
     return check(MEMHOOK_TYPE_WRITE, addr);
+}
+
+memhook_fun_t memhook_check_transl(uint16_t addr) {
+    return check(MEMHOOK_TYPE_TRANSL, addr);
 }
