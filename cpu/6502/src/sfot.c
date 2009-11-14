@@ -78,7 +78,7 @@ int sfot_load(int fd, uint16_t offset, uint16_t len)
     return bytes_read;
 }
 
-int sfot_load_stream(uint8_t *s, uint16_t offset, uint16_t len)
+int sfot_load_stream(const uint8_t *s, uint16_t offset, uint16_t len)
 {
     int i;
 
