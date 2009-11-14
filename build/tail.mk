@@ -1,5 +1,9 @@
 .PHONY: subdirs subdirs-clean subdirs-test
 
+CHECK_CFLAGS=$(shell pkg-config --cflags check)
+CHECK_LIBS=$(shell pkg-config --libs check)
+
+
 subdirs: $(SUBDIRS)
 	@for d in $(SUBDIRS); do (cd $$d; $(MAKE)); done
 

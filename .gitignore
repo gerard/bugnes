@@ -7,3 +7,4 @@ a.out
 *.srec
 cscope.out
 test/6502asm/*.asm
+check_runner
