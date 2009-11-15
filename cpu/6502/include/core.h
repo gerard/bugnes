@@ -13,9 +13,9 @@
 #define FLAG_N      (1 << 6)
 
 #define CPU_ADDR_RESERVED_START     0xFFFA
-#define CPU_ADDR_NMI                CPU_ADDR_RESERVED_START + 2
+#define CPU_ADDR_NMI                CPU_ADDR_RESERVED_START
 #define CPU_ADDR_RESET              CPU_ADDR_RESERVED_START + 2
-#define CPU_ADDR_BREAK              CPU_ADDR_RESERVED_START + 2
+#define CPU_ADDR_BREAK              CPU_ADDR_RESERVED_START + 4
 
 typedef enum {
     REG_INVALID = -1,
