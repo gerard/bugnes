@@ -1,5 +1,5 @@
 export VERSION:=$(shell git rev-parse HEAD | dd bs=8 count=1 2> /dev/null)
-export CFLAGS=-Wall -g -I$(PWD)/include -DVERSION=\"$(VERSION)\"
+export CFLAGS=-Wall -O0 -g -I$(PWD)/include -DVERSION=\"$(VERSION)\"
 export LDFLAGS=-L$(PWD)/cpu
 export CC=gcc
 
