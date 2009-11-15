@@ -57,5 +57,6 @@ void sfot_set_reset(uint16_t val);
 int sfot_load(int fd, uint16_t offset, uint16_t len);
 int sfot_load_stream(const uint8_t *s, uint16_t offset, uint16_t len);
 void sfot_poweron();
+void sfot_poweroff();
 
 #endif

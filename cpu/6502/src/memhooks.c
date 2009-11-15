@@ -130,6 +130,22 @@ int sfot_memhook_i_insert_transl(memhook_transl_fun_t mh_fun, char *mh_fun_name,
     return insert(MEMHOOK_TYPE_TRANSL, hook, mh_fun_name, addr_start, addr_end);
 }
 
+void sfot_memhook_clear()
+{
+    int i;
+
+    for (i = 0; i < MEMHOOK_TYPE_MAX; i++) {
+        struct memhook *iter = all_mh[i];
+        all_mh[i] = NULL;
+
+        while (iter) {
+            struct memhook *iter_next = iter->next;
+            free(iter);
+            iter = iter_next;
+        }
+    }
+}
+
 /* Debugging: Output all the memhooks registered */
 void sfot_memhook_dump(char *buf)
 {

@@ -16,4 +16,6 @@ typedef enum {
 
 void sfot_excepthook_insert(eh_type_t eh_type, excepthook_fun_t eh_fun);
 
+void sfot_excepthook_clear();
+
 #endif

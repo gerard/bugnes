@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include "memhooks.h"
 #include "core.h"
@@ -11,6 +12,16 @@ static uint8_t short_regs[REG_MAX];
 /* The stack takes 256B in the 0x0100-0x01FF address space */
 static uint8_t mem[0x10000];
 static uint8_t *stack = &mem[0x100];
+
+void core_clear_all()
+{
+    int i;
+
+    memset(mem, 0, sizeof(mem));
+    for (i = 0; i < REG_MAX; i++) {
+        short_regs[i] = 0;
+    }
+}
 
 /**
  * MEMORY

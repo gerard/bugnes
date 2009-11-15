@@ -27,6 +27,8 @@ typedef enum {
     REG_MAX
 } short_reg_t;
 
+void core_clear_all();
+
 uint8_t MEM_READ(uint16_t addr);
 uint16_t MEM_READ16(uint16_t addr);
 void MEM_WRITE(uint16_t addr, uint8_t v);

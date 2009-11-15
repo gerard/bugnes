@@ -29,6 +29,7 @@ int sfot_memhook_i_insert_write(memhook_write_fun_t mh_fun, char *mh_fun_name,
 int sfot_memhook_i_insert_transl(memhook_transl_fun_t mh_fun, char *mh_fun_name,
                                  uint16_t addr_start, uint16_t addr_end);
 
+void sfot_memhook_clear();
 void sfot_memhook_dump(char *buf);
 
 #endif

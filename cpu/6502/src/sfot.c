@@ -12,6 +12,7 @@
 #include "cpu/sfot.h"
 
 static sfot_step_cb step_cb;
+static int is_powered_on;
 pthread_t thr;
 
 static void collect_step_info(struct sfot_step_info *info)
@@ -105,6 +106,8 @@ sfot_step_cb sfot_install_step_cb(sfot_step_cb cb)
 
 void sfot_poweron(sfot_running_mode runmode)
 {
+    if (is_powered_on) return;
+
     opcode_fetch_start(MEM_READ16(CPU_ADDR_RESET));
 
     switch(runmode) {
@@ -116,4 +119,17 @@ void sfot_poweron(sfot_running_mode runmode)
         pthread_detach(thr);
         break;
     }
+
+    is_powered_on = 1;
+}
+
+void sfot_poweroff() {
+    if (!is_powered_on) return;
+
+    core_clear_all();
+    sfot_excepthook_clear();
+    sfot_memhook_clear();
+    step_cb = NULL;
+
+    is_powered_on = 0;
 }
