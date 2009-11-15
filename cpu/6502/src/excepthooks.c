@@ -3,10 +3,10 @@
 static excepthook_fun_t eh_fun_v[EXCEPTHOOK_TYPE_MAX];
 
 /* Getter: Calling interface for the CPU */
-void excepthook_check(eh_type_t eh_type, const char *s)
+void excepthook_check(eh_type_t eh_type, uint16_t exc_addr, const char *s)
 {
     excepthook_fun_t hook = eh_fun_v[eh_type];
-    if (hook) hook(s);
+    if (hook) hook(exc_addr, s);
 }
 
 /* Setter: Hook insertion for users (machines) */

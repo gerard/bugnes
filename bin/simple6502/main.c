@@ -139,7 +139,7 @@ uint8_t keycode_memhook(uint16_t addr)
     return ret;
 }
 
-void excepthook(const char *s)
+void excepthook(uint16_t addr, const char *s)
 {
     EXCEPTION(s);
 

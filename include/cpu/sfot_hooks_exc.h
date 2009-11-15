@@ -7,7 +7,7 @@
  * This functions are executed on exceptions, like stack over/underflows and
  * unhandled BRK or interrupts.
  */
-typedef void (* excepthook_fun_t)(const char *s);
+typedef void (* excepthook_fun_t)(uint16_t addr, const char *s);
 
 typedef enum {
     EXCEPTHOOK_TYPE_BRK,

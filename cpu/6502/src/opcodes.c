@@ -298,7 +298,7 @@ static void asm_shrot(uint16_t addr, short_reg_t reg, int direction, int fill)
 /**** Misc ****/
 static void asm_break()
 {
-    excepthook_check(EXCEPTHOOK_TYPE_BRK, "BRK");
+    excepthook_check(EXCEPTHOOK_TYPE_BRK, GET_PC(), "BRK");
     branch_status(MEM_READ16(CPU_ADDR_BREAK));
 }
 

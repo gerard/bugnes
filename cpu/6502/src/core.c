@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include "memhooks.h"
-#include "excepthooks.h"
 #include "core.h"
 
 /* MODULE VARIABLES: CPU State and registers */
