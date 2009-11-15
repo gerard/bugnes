@@ -13,7 +13,7 @@ test: $(TARGET)
 	@./$(TARGET)
 
 clean:
-	@rm -rf $(TARGET)
+	@rm -rf $(TARGET) *.o
 	@echo CLEAN
 
 include $(MAKE_INCDIR)/tail.mk
