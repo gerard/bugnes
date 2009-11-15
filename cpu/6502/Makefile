@@ -8,10 +8,13 @@ all: $(OUT)
 
 obj/%.o : src/%.c
 	@mkdir -p obj
-	$(CC) -c $(CFLAGS) $< -o $@
+	@printf "CC\t$@\n"
+	@$(CC) -c $(CFLAGS) $< -o $@
 
 $(OUT): $(OBJECTS)
-	ar cq $(OUT) $(OBJECTS)
+	@printf "AR\t$@\n"
+	@ar cq $(OUT) $(OBJECTS)
 
 clean:
-	$(RM) -r obj $(OUT)
+	@echo CLEAN
+	@$(RM) -r obj $(OUT)

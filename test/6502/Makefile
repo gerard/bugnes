@@ -16,19 +16,23 @@ TARGET=a.out
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS) $(SFOT_LIB)
-	$(CC) $(OBJECTS) $(SFOT_LIB) $(LDFLAGS) -o $@
+	@printf "LD\t$@\n"
+	@$(CC) $(OBJECTS) $(SFOT_LIB) $(LDFLAGS) -o $@
 
 test: $(TARGET) $(BINS) $(TRACES)
 	@./runtests.sh $(TARGET)
 
 # crasm has a lot of crappy output
 $(SRECS): %.srec: %.asm
+	@printf "CRASM\t$@\n"
 	@crasm -s -l -x -o $@ $< > /dev/null
 
 $(BINS): %.bin: %.srec
+	@printf "SREC\t$@\n"
 	@srec_cat $< -output $@ -binary
 
 clean:
-	$(RM) $(OBJECTS) $(TARGET) $(BINS) $(SRECS)
+	@echo CLEAN
+	@$(RM) $(OBJECTS) $(TARGET) $(BINS) $(SRECS)
 
 .PHONY: test

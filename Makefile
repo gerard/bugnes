@@ -1,4 +1,4 @@
-export VERSION=$(shell git rev-parse HEAD | dd bs=8 count=1)
+export VERSION:=$(shell git rev-parse HEAD | dd bs=8 count=1 2> /dev/null)
 export CFLAGS=-Wall -g -I$(PWD)/include -DVERSION=\"$(VERSION)\"
 export LDFLAGS=-L$(PWD)/cpu
 export CC=gcc
@@ -13,9 +13,11 @@ SUBDIRS_TEST=test
 all: subdirs subdirs-test cscope.out
 
 cscope.out:
-	cscope -Rb
+	@echo CSCOPE
+	@cscope -Rb
 
 clean: subdirs-clean
-	$(RM) cscope.out
+	@echo CLEAN
+	@$(RM) cscope.out
 
 include $(MAKE_INCDIR)/tail.mk

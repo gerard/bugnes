@@ -20,8 +20,8 @@
 #include "cpu/sfot.h"
 
 #define BUG(s)              fprintf(stderr, "%s: this is not supposed to happen [%s():%d]\n", (s), __FUNCTION__, __LINE__)
-#define TEST_FAIL(s1, s2)   fprintf(stderr, "\033[0;31mFAIL\033[m: Expected: %s\n           Got: %s\n", (s1), (s2));
-#define TEST_SUCCESS(tv)    fprintf(stderr, "\033[0;32mSUCC\033[m: %s ran in %s secs\n", testfile_name, tv_print(tv))
+#define TEST_FAIL(s1, s2)   fprintf(stderr, "\033[0;31mFAIL\033[m:\tExpected: %s\n           Got: %s\n", (s1), (s2));
+#define TEST_SUCCESS(tv)    fprintf(stderr, "\033[0;32mSUCC\033[m:\t%s ran in %s secs\n", testfile_name, tv_print(tv))
 
 struct timeval tv_startup;
 struct timeval tv_teardown;

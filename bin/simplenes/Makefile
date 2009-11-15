@@ -6,7 +6,9 @@ TARGET=a.out
 LDFLAGS+=-lpthread
 
 $(TARGET): $(OBJECTS) $(SFOT_LIB)
-	$(CC) $(OBJECTS) $(SFOT_LIB) $(LDFLAGS) -o $@
+	@printf "LD\t$@\n"
+	@$(CC) $(OBJECTS) $(SFOT_LIB) $(LDFLAGS) -o $@
 
 clean:
-	$(RM) $(OBJECTS) $(TARGET)
+	@echo CLEAN
+	@$(RM) $(OBJECTS) $(TARGET)
