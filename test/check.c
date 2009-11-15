@@ -5,6 +5,12 @@
 #include <cpu/sfot.h>
 #include "6502_macros.h"
 
+#define JMP_TO_SUCC()   JMP_ABS(0x1000)
+#define JMP_TO_FAIL()   JMP_ABS(0x1001)
+
+#define CHECK_EXC_RET() fail_unless(exception_addr == EXCEPTION_SUCCESS, \
+                                    "Except return address signals FAIL")
+
 /*
  * Testing code.  The tests use hooks to gain information of the execution as
  * well as list of exception addresses.  That is, the 6502 code will jump to
@@ -54,6 +60,25 @@ void exception_hook(uint16_t addr, const char *s)
     exception_addr = addr;
 }
 
+/* Test Fixtures */
+void fixture_setup()
+{
+    read_mh_hit_times = 0;
+    write_mh_hit_times = 0;
+
+    sfot_excepthook_insert(EXCEPTHOOK_TYPE_BRK, exception_hook);
+    sfot_install_step_cb(step_hook_stop_at_brk);
+    sfot_set_reset(0x200);
+}
+
+void fixture_teardown()
+{
+    read_mh_hit_times = 0;
+    write_mh_hit_times = 0;
+
+    sfot_poweroff();
+}
+
 /*
  * Start of the actual test code
  */
@@ -66,34 +91,74 @@ START_TEST (MirrorWithTranslationHook)
         JMP_ABS(0x1000),
     };
     uint16_t asm_size = sizeof(ASM);
+    sfot_load_stream(ASM, 0x200, asm_size);
 
-    read_mh_hit_times = 0;
-    write_mh_hit_times = 0;
     sfot_memhook_insert_read_simple(read_mh_hit, 0x0);
     sfot_memhook_insert_write_simple(write_mh_hit, 0x0);
     sfot_memhook_insert_transl_simple(transl_mh_mirror, 0x80);
-    sfot_excepthook_insert(EXCEPTHOOK_TYPE_BRK, exception_hook);
-    sfot_install_step_cb(step_hook_stop_at_brk);
 
-    sfot_load_stream(ASM, 0x200, asm_size);
-    sfot_set_reset(0x200);
     sfot_poweron(SFOT_RUN_MAIN);
 
     fail_if(read_mh_hit_times == 0, "Read hook not hit");
     fail_if(read_mh_hit_times >  1, "Read hook hit multiple times");
     fail_if(write_mh_hit_times == 0, "Write hook not hit");
     fail_if(write_mh_hit_times >  1, "Write hook hit multiple times");
-    fail_unless(exception_addr == EXCEPTION_SUCCESS,
-                "Except return address signals FAIL");
+    CHECK_EXC_RET();
+}
+END_TEST
+
+START_TEST (CarryOnChainedSBC)
+{
+    const uint8_t ASM[] = {
+        /* Set the values */
+        LDA_IMM(0x00),
+        STA_ZPA(0xC0),
+        LDA_IMM(0x03),
+        STA_ZPA(0xC1),
+        LDA_IMM(0xFF),
+        STA_ZPA(0xB0),
+        LDA_IMM(0x00),
+        STA_ZPA(0xB1),
+        CLD_IMP(),
+        SEC_IMP(),
+
+        /* Do the substraction, store the result in 0xC2-0xC3 */
+        LDA_ZPA(0xC0),
+        SBC_ZPA(0xB0),
+        STA_ZPA(0xC2),
+        LDA_ZPA(0xC1),
+        SBC_ZPA(0xB1),
+        STA_ZPA(0xC3),
+
+        /* Now, compare the value to the expected one: 0x201 */
+        LDA_IMM(0x01),
+        CMP_ZPA(0xC2),
+        BEQ_REL(+3),
+        JMP_TO_FAIL(),
+
+        LDA_IMM(0x02),
+        CMP_ZPA(0xC3),
+        BEQ_REL(+3),
+        JMP_TO_FAIL(),
+
+        JMP_TO_SUCC(),
+    };
+    uint16_t asm_size = sizeof(ASM);
+    sfot_load_stream(ASM, 0x200, asm_size);
+
+    sfot_poweron(SFOT_RUN_MAIN);
+    CHECK_EXC_RET();
 }
 END_TEST
 
 Suite *sfot_suite(void)
 {
     Suite *s = suite_create("SFOT");
-    TCase *tc_transl_hook = tcase_create("TranslationHook");
-    tcase_add_test(tc_transl_hook, MirrorWithTranslationHook);
-    suite_add_tcase(s, tc_transl_hook);
+    TCase *tc_main = tcase_create("Main");
+    tcase_add_checked_fixture(tc_main, fixture_setup, fixture_teardown);
+    tcase_add_test(tc_main, MirrorWithTranslationHook);
+    tcase_add_test(tc_main, CarryOnChainedSBC);
+    suite_add_tcase(s, tc_main);
 
     return s;
 }
