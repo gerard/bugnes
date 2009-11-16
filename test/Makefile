@@ -1,4 +1,4 @@
-CFLAGS=-I$(BUGNES_ROOT)/include $(CHECK_CFLAGS)
+CFLAGS=-g -I$(BUGNES_ROOT)/include $(CHECK_CFLAGS)
 LDFLAGS=-lpthread
 SFOT_LIB=$(BUGNES_ROOT)/cpu/6502/libsfot.a
 

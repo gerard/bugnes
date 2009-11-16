@@ -9,7 +9,8 @@
 #define JMP_TO_FAIL()   JMP_ABS(0x1001)
 
 #define CHECK_EXC_RET() fail_unless(exception_addr == EXCEPTION_SUCCESS, \
-                                    "Except return address signals FAIL")
+                                    "Except return address signals FAIL (0x%04X)", \
+                                    exception_addr)
 
 /*
  * Testing code.  The tests use hooks to gain information of the execution as
@@ -151,6 +152,32 @@ START_TEST (CarryOnChainedSBC)
 }
 END_TEST
 
+START_TEST (SubroutineCallAndReturn)
+{
+    /* We jump to a subroutine that modifies the return address in the stack.
+     * If we don't jump or for some reason the address is not properly altered
+     * we wil fail singal fail.  The address that JSR pushes to the stack is
+     * the return point *minus* one.  Anyway, that shouldn't matter.
+     */
+    const uint8_t ASM[] = {
+        LDX_IMM(0xFF),
+        TXS_IMP(),
+        JSR_ABS(0x020C),
+        JMP_TO_FAIL(),
+        JMP_TO_SUCC(),
+        PLA_IMP(),
+        ADC_IMM(0x03),          /* We add 3 to avoid JMP_TO_FAIL() */
+        PHA_IMP(),
+        RTS_IMP(),
+    };
+    uint16_t asm_size = sizeof(ASM);
+    sfot_load_stream(ASM, 0x200, asm_size);
+
+    sfot_poweron(SFOT_RUN_MAIN);
+    CHECK_EXC_RET();
+}
+END_TEST
+
 Suite *sfot_suite(void)
 {
     Suite *s = suite_create("SFOT");
@@ -158,6 +185,7 @@ Suite *sfot_suite(void)
     tcase_add_checked_fixture(tc_main, fixture_setup, fixture_teardown);
     tcase_add_test(tc_main, MirrorWithTranslationHook);
     tcase_add_test(tc_main, CarryOnChainedSBC);
+    tcase_add_test(tc_main, SubroutineCallAndReturn);
     suite_add_tcase(s, tc_main);
 
     return s;
