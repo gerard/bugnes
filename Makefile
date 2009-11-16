@@ -7,10 +7,9 @@ export MAKE_INCDIR=$(PWD)/build
 export BUGNES_ROOT=$(PWD)
 
 # Order is important to get the dependencies right
-SUBDIRS=cpu bin
-SUBDIRS_TEST=test
+SUBDIRS=cpu bin test
 
-all: subdirs subdirs-test cscope.out
+all: subdirs cscope.out
 
 cscope.out:
 	@echo CSCOPE
