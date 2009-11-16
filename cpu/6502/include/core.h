@@ -9,8 +9,8 @@
 #define FLAG_I      (1 << 2)
 #define FLAG_D      (1 << 3)
 #define FLAG_B      (1 << 4)
-#define FLAG_V      (1 << 5)
-#define FLAG_N      (1 << 6)
+#define FLAG_V      (1 << 6)
+#define FLAG_N      (1 << 7)
 
 #define CPU_ADDR_RESERVED_START     0xFFFA
 #define CPU_ADDR_NMI                CPU_ADDR_RESERVED_START
