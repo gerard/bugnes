@@ -11,3 +11,5 @@ check_runner
 *.c.gcov
 *.gcda
 *.gcno
+*.lcov
+html_cov

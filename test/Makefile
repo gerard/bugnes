@@ -8,7 +8,7 @@ SFOT_GCOV=$(patsubst obj/%.o, obj/%.c.gcov, $(SFOT_OBJ))
 
 TARGET=check_runner
 
-all: test $(SFOT_GCOV)
+all: test html_cov
 
 # grep the gcov output so it doesn't mess up the build log.  The if line helps
 # pretifying the output also.
@@ -16,6 +16,14 @@ $(SFOT_GCOV): %.c.gcov: %.o
 	@printf "GCOV\t$<\t"
 	@if [ `echo $< | wc -c` -lt 16 ]; then printf "\t"; fi
 	@(cd obj; gcov $< | grep ^Lines; cd ..)
+
+html_cov: check.lcov
+	@printf "HTML\t$@\n"
+	@genhtml -o $@ $< > /dev/null > /dev/null
+
+check.lcov: $(SFOT_GCOV)
+	@printf "LCOV\n"
+	@lcov --directory obj --capture --output-file $@ > /dev/null
 
 $(SFOT_OBJ): obj/%.o: $(SFOT_SRC_DIR)/%.c
 	@mkdir -p obj
@@ -31,7 +39,7 @@ test: $(TARGET)
 	@./$(TARGET)
 
 clean:
-	@rm -rf $(TARGET) *.o *.gcno *.gcda obj
+	@rm -rf $(TARGET) *.o check.lcov html_cov obj
 	@echo CLEAN
 
 include $(MAKE_INCDIR)/tail.mk
