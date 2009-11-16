@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
 #include <check.h>
 
@@ -33,6 +34,7 @@ static unsigned int read_mh_hit_times;
 uint8_t read_mh_hit(uint16_t addr)
 {
     read_mh_hit_times++;
+    return 0;
 }
 
 /* Same thing for reads */
@@ -40,6 +42,7 @@ static unsigned int write_mh_hit_times;
 uint8_t write_mh_hit(uint16_t addr, uint8_t value)
 {
     write_mh_hit_times++;
+    return 0;
 }
 
 /* Mirrors 0x80 in 0x0 */
