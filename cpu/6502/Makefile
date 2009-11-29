@@ -18,3 +18,5 @@ $(OUT): $(OBJECTS)
 clean:
 	@echo CLEAN
 	@$(RM) -r obj $(OUT)
+
+include $(BUGNES_ROOT)/build/tail.mk

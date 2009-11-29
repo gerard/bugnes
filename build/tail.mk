@@ -4,6 +4,11 @@ CHECK_CFLAGS=$(shell pkg-config --cflags check)
 CHECK_LIBS=$(shell pkg-config --libs check)
 GCOV_CFLAGS=-fprofile-arcs -ftest-coverage
 
+# Default compile rule
+%.o : %.c
+	@printf "CC\t$@\n"
+	@$(CC) $(CFLAGS) -c $< -o $@
+
 subdirs: $(SUBDIRS)
 	@for d in $(SUBDIRS); do (cd $$d; $(MAKE)); done
 

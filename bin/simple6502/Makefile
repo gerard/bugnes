@@ -13,3 +13,5 @@ $(TARGET): $(OBJECTS) $(SFOT_LIB)
 clean:
 	@echo CLEAN
 	@$(RM) $(OBJECTS) $(TARGET)
+
+include $(BUGNES_ROOT)/build/tail.mk
