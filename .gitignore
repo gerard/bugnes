@@ -6,10 +6,9 @@ a.out
 *.bin
 *.srec
 cscope.out
-test/6502asm/*.asm
 check_runner
 *.c.gcov
 *.gcda
 *.gcno
 *.lcov
-html_cov
+/test/cov

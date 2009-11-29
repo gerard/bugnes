@@ -181,10 +181,11 @@ START_TEST (SubroutineCallAndReturn)
 }
 END_TEST
 
-Suite *sfot_suite(void)
+
+Suite *cpu_6502_suite(void)
 {
-    Suite *s = suite_create("SFOT");
-    TCase *tc_main = tcase_create("Main");
+    Suite *s = suite_create("CPU 6502");
+    TCase *tc_main = tcase_create("main");
     tcase_add_checked_fixture(tc_main, fixture_setup, fixture_teardown);
     tcase_add_test(tc_main, MirrorWithTranslationHook);
     tcase_add_test(tc_main, CarryOnChainedSBC);
@@ -192,17 +193,4 @@ Suite *sfot_suite(void)
     suite_add_tcase(s, tc_main);
 
     return s;
-}
-
-int main(void)
-{
-    int n_failed;
-    Suite *s = sfot_suite();
-    SRunner *sr = srunner_create(s);
-
-    srunner_run_all(sr, CK_NORMAL);
-    n_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
-
-    return n_failed ? EXIT_FAILURE : EXIT_SUCCESS;
 }
