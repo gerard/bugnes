@@ -75,15 +75,15 @@ int main(int argc, char *argv[])
 
     sfot_install_step_cb(step_cb);
 
-    sfot_memhook_insert_read_simple(PPU_cr1_read, PPU_CR1_MAP);
-    sfot_memhook_insert_read_simple(PPU_cr2_read, PPU_CR2_MAP);
-    sfot_memhook_insert_read_simple(PPU_status_read, PPU_STATUS_MAP);
-    sfot_memhook_insert_read_simple(PPU_memdata_read, PPU_MEM_DATA_MAP);
+    sfot_memhook_insert_read_simple(PPU_hook_cr1_read, PPU_CR1_MAP);
+    sfot_memhook_insert_read_simple(PPU_hook_cr2_read, PPU_CR2_MAP);
+    sfot_memhook_insert_read_simple(PPU_hook_status_read, PPU_STATUS_MAP);
+    sfot_memhook_insert_read_simple(PPU_hook_memdata_read, PPU_MEM_DATA_MAP);
 
-    sfot_memhook_insert_write_simple(PPU_cr1_write, PPU_CR1_MAP);
-    sfot_memhook_insert_write_simple(PPU_cr2_write, PPU_CR2_MAP);
-    sfot_memhook_insert_write_simple(PPU_memaddr_write, PPU_MEM_ADDR_MAP);
-    sfot_memhook_insert_write_simple(PPU_memdata_write, PPU_MEM_DATA_MAP);
+    sfot_memhook_insert_write_simple(PPU_hook_cr1_write, PPU_CR1_MAP);
+    sfot_memhook_insert_write_simple(PPU_hook_cr2_write, PPU_CR2_MAP);
+    sfot_memhook_insert_write_simple(PPU_hook_memaddr_write, PPU_MEM_ADDR_MAP);
+    sfot_memhook_insert_write_simple(PPU_hook_memdata_write, PPU_MEM_DATA_MAP);
 
     sfot_memhook_insert_transl(mirror_internal_ram, INTERNAL_RAM_MIRROR_START
                                                   , INTERNAL_RAM_MIRROR_STOP);

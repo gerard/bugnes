@@ -9,17 +9,18 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "ppu_registers.h"
+
+/* MAIN PPU MEMORY */
 /* memhook_PPU_memread() needs this because the first read is dummy */
 static int memaddr_just_setted;
 static uint16_t memaddr;
 
 #define PPU_SIZE        0x4000
 static uint8_t memory[PPU_SIZE];
-static uint8_t reg_cr1;
-static uint8_t reg_cr2;
 
 static uint8_t memread() {
-    uint8_t ret = memory[memaddr & 0x3FFF];
+    uint8_t ret = memory[memaddr % PPU_SIZE];
 
     memaddr += 1;
     if (memaddr > PPU_SIZE) memaddr %= PPU_SIZE;
@@ -29,7 +30,7 @@ static uint8_t memread() {
 
 static uint8_t memwrite(uint8_t value)
 {
-    uint16_t increment = reg_cr1 & 0x4 ? 32 : 1;
+    uint16_t increment = PPU_REG_GETF(CR1, VERTICAL_WRITE) ? 32 : 1;
 
     memory[memaddr & 0x3FFF] = value;
     memaddr += increment;
@@ -39,37 +40,35 @@ static uint8_t memwrite(uint8_t value)
 }
 
 
-uint8_t PPU_cr1_read(uint16_t addr)
+uint8_t PPU_hook_cr1_read(uint16_t addr)
 {
-    return reg_cr1;
+    return PPU_REG_GET(CR1);
 }
 
-uint8_t PPU_cr1_write(uint16_t addr, uint8_t value)
+uint8_t PPU_hook_cr1_write(uint16_t addr, uint8_t value)
 {
-    reg_cr1 = value;
-
+    PPU_REG_SET(CR1, value);
     return value;
 }
 
-uint8_t PPU_cr2_read(uint16_t addr)
+uint8_t PPU_hook_cr2_read(uint16_t addr)
 {
-    return reg_cr2;
+    return PPU_REG_GET(CR2);
 }
 
-uint8_t PPU_cr2_write(uint16_t addr, uint8_t value)
+uint8_t PPU_hook_cr2_write(uint16_t addr, uint8_t value)
 {
-    reg_cr2 = value;
-
+    PPU_REG_SET(CR2, value);
     return value;
 }
 
-uint8_t PPU_status_read(uint16_t addr)
+uint8_t PPU_hook_status_read(uint16_t addr)
 {
     /* Suppose for now that VBlank and Hit flag are up always */
     return 0xC0;
 }
 
-uint8_t PPU_memaddr_write(uint16_t addr, uint8_t value)
+uint8_t PPU_hook_memaddr_write(uint16_t addr, uint8_t value)
 {
     static int set_lower;
     memaddr_just_setted = 1;
@@ -88,7 +87,7 @@ uint8_t PPU_memaddr_write(uint16_t addr, uint8_t value)
     return value;
 }
 
-uint8_t PPU_memdata_read(uint16_t addr)
+uint8_t PPU_hook_memdata_read(uint16_t addr)
 {
     if (memaddr_just_setted) {
         memaddr_just_setted = 0;
@@ -97,7 +96,7 @@ uint8_t PPU_memdata_read(uint16_t addr)
     return memread();
 }
 
-uint8_t PPU_memdata_write(uint16_t addr, uint8_t value)
+uint8_t PPU_hook_memdata_write(uint16_t addr, uint8_t value)
 {
     memwrite(value);
     return 0;
