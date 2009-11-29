@@ -13,9 +13,6 @@ $(SFOT_OBJ): obj/%.o: $(SFOT_SRC_DIR)/%.c
 	@printf "CC(COV)\t$@\n"
 	@$(CC) $(CFLAGS) $(GCOV_CFLAGS) -I$(BUGNES_ROOT)/cpu/6502/include -c $< -o $@
 
-test: $(TARGET)
-	@./$(TARGET)
-
 clean:
 	@rm -rf *.o obj
 	@echo CLEAN
