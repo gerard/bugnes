@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #include "ppu.h"
 #include "cpu/sfot.h"
@@ -25,6 +26,28 @@ int step_cb(struct sfot_step_info *info)
 
     return 0;
 }
+
+/* All mirroring functions resort to this. it reads like this:
+ * We have a address space from START to STOP, but the amount of physical
+ * memory is SIZE.  Since the translation hook is executed before any other
+ * hook, account that only the translated address will be accessed; ie, from
+ * START to SIZE.
+ */
+uint16_t mirror(uint16_t addr, uint16_t start, uint16_t size)
+{
+    return (addr % size) + start;
+}
+
+#define INTERNAL_RAM_MIRROR_START   0x0000
+#define INTERNAL_RAM_MIRROR_STOP    0x2000
+#define INTERNAL_RAM_MIRROR_SIZE    0x0800
+uint16_t mirror_internal_ram(uint16_t addr)
+{
+    assert(addr < INTERNAL_RAM_MIRROR_STOP);
+
+    return mirror(addr, INTERNAL_RAM_MIRROR_START, INTERNAL_RAM_MIRROR_STOP);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -61,6 +84,9 @@ int main(int argc, char *argv[])
     sfot_memhook_insert_write_simple(PPU_cr2_write, PPU_CR2_MAP);
     sfot_memhook_insert_write_simple(PPU_memaddr_write, PPU_MEM_ADDR_MAP);
     sfot_memhook_insert_write_simple(PPU_memdata_write, PPU_MEM_DATA_MAP);
+
+    sfot_memhook_insert_transl(mirror_internal_ram, INTERNAL_RAM_MIRROR_START
+                                                  , INTERNAL_RAM_MIRROR_STOP);
 
     sfot_memhook_dump(buf);
     printf(buf);
