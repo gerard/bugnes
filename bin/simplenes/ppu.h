@@ -1,6 +1,8 @@
 #ifndef _SIMPLENES_PPU_H_
 #define _SIMPLENES_PPU_H_
 
+#include <stdint.h>
+
 uint8_t PPU_hook_cr1_read(uint16_t addr);
 uint8_t PPU_hook_cr2_read(uint16_t addr);
 uint8_t PPU_hook_status_read(uint16_t addr);
