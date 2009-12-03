@@ -1,7 +1,5 @@
-all: check.o
-check.o: check.h
-clean:
-	@rm -f check.o
-	@echo CLEAN
+include $(BUGNES_ROOT)/build/head.mk
 
-include $(MAKE_INCDIR)/tail.mk
+SOURCES_CHECK = check.c
+
+include $(BUGNES_ROOT)/build/tail.mk

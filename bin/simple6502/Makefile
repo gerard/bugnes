@@ -1,17 +1,10 @@
-SOURCES=main.c
-OBJECTS=$(SOURCES:.c=.o)
-SFOT_LIB=$(BUGNES_ROOT)/cpu/6502/libsfot.a
-TARGET=a.out
+include build/head.mk
+include build/cpu/6502.mk
 
-CFLAGS+=`sdl-config --cflags`
-LDFLAGS+=-lpthread `sdl-config --libs`
+CFLAGS += `sdl-config --cflags`
+LDFLAGS += `sdl-config --libs`
 
-$(TARGET): $(OBJECTS) $(SFOT_LIB)
-	@printf "LD\t$@\n"
-	@$(CC) $(OBJECTS) $(SFOT_LIB) $(LDFLAGS) -o $@
+SOURCES = main.c
+TARGET = a.out
 
-clean:
-	@echo CLEAN
-	@$(RM) $(OBJECTS) $(TARGET)
-
-include $(BUGNES_ROOT)/build/tail.mk
+include build/tail.mk

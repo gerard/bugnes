@@ -1,22 +1,11 @@
-SOURCES=$(wildcard src/*.c)
-OBJECTS=$(patsubst src/%, obj/%, $(SOURCES:.c=.o))
-OUT=libsfot.a
+include $(BUGNES_ROOT)/build/head.mk
 
-CFLAGS+=-I./include -g
+CFLAGS+=-I./include -I$(BUGNES_ROOT)/include
 
-all: $(OUT)
+SOURCES = addr.c core.c disas.c excepthooks.c memhooks.c opcodes.c sfot.c
+SOURCES_PATH = src
+COMPILE_PATH = obj
 
-obj/%.o : src/%.c
-	@mkdir -p obj
-	@printf "CC\t$@\n"
-	@$(CC) -c $(CFLAGS) $< -o $@
-
-$(OUT): $(OBJECTS)
-	@printf "AR\t$@\n"
-	@ar cq $(OUT) $(OBJECTS)
-
-clean:
-	@echo CLEAN
-	@$(RM) -r obj $(OUT)
+STATIC_LIBRARY := libsfot.a
 
 include $(BUGNES_ROOT)/build/tail.mk

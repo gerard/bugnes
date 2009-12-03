@@ -1,18 +1,13 @@
-CFLAGS+=$(CHECK_CFLAGS) -I$(NES_SRC_DIR)
-NES_SRC_DIR=$(BUGNES_ROOT)/bin/simplenes
-NES_SRC=$(subst main.c,,$(wildcard $(NES_SRC_DIR)/*.c))
-NES_OBJ=$(patsubst $(NES_SRC_DIR)/%.c, obj/%.o, $(NES_SRC))
+include $(BUGNES_ROOT)/build/head.mk
 
+SOURCES_PATH_GCOV = $(BUGNES_ROOT)/$(subst $(BUGNES_ROOT)/test,,$(shell pwd))
+COMPILE_PATH_GCOV = obj
 
-all: check.o $(NES_OBJ)
+CFLAGS += -I$(SOURCES_PATH_GCOV)
 
-obj/%.o: $(NES_SRC_DIR)/%.c
-	@mkdir -p obj
-	@printf "CC(COV)\t$@\n"
-	@$(CC) $(CFLAGS) $(GCOV_CFLAGS) -c $< -o $@
+SOURCES_GCOV = ppu.c ppu_registers.c 
+OBJECTS_GCOV = $(patsubst $(SOURCES), obj/%.o, $(TEST_SRC))
 
-clean:
-	@rm -rf check.o obj
-	@echo CLEAN
+SOURCES_CHECK = check.c
 
-include $(MAKE_INCDIR)/tail.mk
+include $(BUGNES_ROOT)/build/tail.mk

@@ -1,20 +1,14 @@
-CFLAGS+=-I$(BUGNES_ROOT)/include $(CHECK_CFLAGS)
-LDFLAGS+=-lpthread
-SFOT_LIB=$(BUGNES_ROOT)/cpu/6502/libsfot.a
-SFOT_SRC_DIR=$(BUGNES_ROOT)/cpu/6502/src
-SFOT_SRC= $(wildcard $(SFOT_SRC_DIR)/*.c)
-SFOT_OBJ= $(patsubst $(SFOT_SRC_DIR)/%.c, obj/%.o, $(SFOT_SRC))
+include build/head.mk
+include build/cpu/6502.mk
 
 
-all: check.o $(SFOT_OBJ)
+COMPILE_PATH_GCOV = obj
+SOURCES_PATH_GCOV = $(TESTDIR_TO_IMP)/src
+SOURCES_GCOV = addr.c core.c disas.c excepthooks.c memhooks.c opcodes.c sfot.c
 
-obj/%.o: $(SFOT_SRC_DIR)/%.c
-	@mkdir -p obj
-	@printf "CC(COV)\t$@\n"
-	@$(CC) $(CFLAGS) $(GCOV_CFLAGS) -I$(BUGNES_ROOT)/cpu/6502/include -c $< -o $@
+SOURCES_CHECK = check.c
 
-clean:
-	@rm -rf *.o obj
-	@echo CLEAN
+# This uses internals, so cpu/6502.mk is not enough
+CFLAGS += -I$(TESTDIR_TO_IMP)/include
 
-include $(MAKE_INCDIR)/tail.mk
+include build/tail.mk

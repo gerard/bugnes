@@ -1,27 +1,42 @@
-SUBDIRS = smoke cpu/6502 bin/simplenes
-SUBDIRS_POST = cov
-
-LDFLAGS+=-lpthread $(CHECK_LIBS)
-
-CHECK_DIRS= $(SUBDIRS)
-CHECK_OBJS= $(patsubst %, %/check.o, $(CHECK_DIRS))
-export GCOV_DIRS = $(shell pwd)/cpu/6502/obj $(shell pwd)/bin/simplenes/obj
-export GCOV_OBJS = $(patsubst %, %/*.o, $(GCOV_DIRS))
+include build/head.mk
+include build/cpu/6502.mk
 
 
-TARGET=check_runner
+# These part builds the coverage thingie
+GCOV_DIRS = cpu/6502 bin/simplenes
+GCOV_OBJS = $(wildcard $(patsubst %, %/obj/*.o, $(GCOV_DIRS)))
+GCOV_REPORTS = $(patsubst %.o, %.c.gcov, $(GCOV_OBJS))
 
-all: subdirs test subdirs-post
+$(GCOV_REPORTS): FANCY_OBJ=$(subst obj/,,$(subst test/,,$(subst $(BUGNES_ROOT)/,,$<)))
+$(GCOV_REPORTS): %.c.gcov: %.o
+	@printf "GCOV\t$(FANCY_OBJ)\t"
+	@if [ `echo $(FANCY_OBJ) | wc -c` -le 24 ]; then printf "\t"; fi
+	@if [ `echo $(FANCY_OBJ) | wc -c` -le 16 ]; then printf "\t"; fi
+	(cd `dirname $<` ; gcov $< | grep ^Lines; cd ..)
 
-$(TARGET): $(TARGET).o
-	@$(CC) $(GCOV_CFLAGS) $(CFLAGS) $^ $(CHECK_OBJS) $(GCOV_OBJS) $(LDFLAGS) -o $@
+check.lcov: $(GCOV_REPORTS)
+	@printf "LCOV\n"
+	lcov $(patsubst %, --directory %, $(GCOV_DIRS)) --capture --output-file $@ > /dev/null
 
-test: $(TARGET)
-	@./$(TARGET) | tail -n1
+index.html: check.lcov
+	@printf "HTML\t$@\n"
+	mkdir -p html
+	(cd html; genhtml ../$< > /dev/null)
 
-clean: subdirs-clean
-	@rm -f $(TARGET) $(TARGET).o
-	@echo CLEAN
+# Standard build system definitions
+ifdef V
+FILTER_EXE_CHECK = head -n1
+endif
 
-include $(MAKE_INCDIR)/tail.mk
-.PHONY: test
+SUBDIRS  = smoke $(GCOV_DIRS)
+OBJECTS  = $(GCOV_OBJS)
+OBJECTS += $(wildcard $(patsubst %, %/check*.o, $(SUBDIRS)))
+SOURCES_CHECK = check_runner.c
+
+TARGET_CHECK = check_runner
+
+EXTRA = run_test index.html
+EXTRA_CLEAN = _html *.lcov
+
+include build/tail.mk
+.PHONY: run_test
