@@ -12,3 +12,4 @@ check_runner
 *.gcno
 *.lcov
 /test/html
+/test/check.log

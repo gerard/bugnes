@@ -24,8 +24,8 @@ index.html: check.lcov
 	(cd html; genhtml ../$< > /dev/null)
 
 # Standard build system definitions
-ifdef V
-FILTER_EXE_CHECK = head -n1
+ifndef V
+FILTER_EXE_CHECK = tail -n1 | xargs -0 printf "RUN_TST\t%s"
 endif
 
 SUBDIRS  = smoke $(GCOV_DIRS)
@@ -36,7 +36,7 @@ SOURCES_CHECK = check_runner.c
 TARGET_CHECK = check_runner
 
 EXTRA = run_test index.html
-EXTRA_CLEAN = _html *.lcov
+EXTRA_CLEAN = _html *.log *.lcov
 
 include build/tail.mk
 .PHONY: run_test

@@ -16,6 +16,7 @@ int main(void)
     srunner_add_suite(sr, simplenes);
     srunner_add_suite(sr, smoke);
 
+    srunner_set_log(sr, "check.log");
     srunner_run_all(sr, CK_MINIMAL);
 
     n_failed = srunner_ntests_failed(sr);
