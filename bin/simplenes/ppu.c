@@ -20,9 +20,10 @@ static uint16_t memaddr;
 static uint8_t memory[PPU_SIZE];
 
 static uint8_t memread() {
+    uint16_t increment = PPU_REG_GETF(CR1, VERTICAL_WRITE) ? 32 : 1;
     uint8_t ret = memory[memaddr % PPU_SIZE];
 
-    memaddr += 1;
+    memaddr += increment;
     if (memaddr > PPU_SIZE) memaddr %= PPU_SIZE;
 
     return ret;

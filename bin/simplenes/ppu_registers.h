@@ -2,6 +2,13 @@
 #include <assert.h>
 
 /* These are detailed descriptions of the PPU registers */
+typedef enum {
+    PPU_REG_INVALID = -1,
+    PPU_REG_CR1,
+    PPU_REG_CR2,
+    PPU_REG_SR,
+    PPU_REG_MAX
+} ppu_reg_t;
 
 /* SIZES: All these are in bits.  Since all the registers are 8 bits, all SIZE
  * enums have to sum up 8 and nothing else
@@ -65,41 +72,37 @@ enum {
 /* These are just helpers for the macros defined in ppu_registers.h.  They are
  * not supposed to be called directly ever.
  */
-uint8_t ppu_reg_i_CR1_get();
-uint8_t ppu_reg_i_CR2_get();
-uint8_t ppu_reg_i_SR_get();
+uint8_t ppu_reg_i_get(ppu_reg_t reg);
+uint8_t ppu_reg_i_get_field(ppu_reg_t reg, uint8_t shift, uint8_t size);
+void ppu_reg_i_set(ppu_reg_t reg, uint8_t v);
+void ppu_reg_i_set_field(ppu_reg_t reg, uint8_t shift, uint8_t size, uint8_t val);
 
-void    ppu_reg_i_CR1_set(uint8_t v);
-void    ppu_reg_i_CR2_set(uint8_t v);
-void    ppu_reg_i_SR_set(uint8_t v);
 
 /* We try not to make the macros too smart and be clear with what the do.  Not
  * that is easy with this nasty preprocessor tricks, but I try :P
  * *shift* is set to a value of one of the _SHIFT enums.  *mask* is the mask
- * that derives from _SHIFT and _SIZE. *clearval* is the register with the
- * field being modified cleared, while *newval* is the register with the new
- * value in.
+ * that derives from _SHIFT and _SIZE.  After the macro magic is done (conca-
+ * tenation), we give it to a internal function to do the job.
  */
 #define PPU_REG_GETF(reg, field) (({                                    \
+    ppu_reg_t ppu_reg = PPU_REG_ ## reg;                                \
     uint8_t shift = reg ## _ ## field ## _SHIFT;                        \
-    uint8_t mask = ((1 << reg ## _ ## field ## _SIZE) - 1) << shift;    \
+    uint8_t size  = reg ## _ ## field ## _SIZE;                         \
                                                                         \
-    (ppu_reg_i_ ## reg ## _get() << shift) & mask >> shift;             \
+    ppu_reg_i_get_field(ppu_reg, shift, size);                          \
 }))
 
 #define PPU_REG_SETF(reg, field, value) (({                             \
+    ppu_reg_t ppu_reg = PPU_REG_ ## reg;                                \
     uint8_t shift = reg ## _ ## field ## _SHIFT;                        \
-    uint8_t mask = ((1 << reg ## _ ## field ## _SIZE) - 1) << shift;    \
-    uint8_t clearval = ppu_reg_i_ ## reg ## _get() & ~mask;             \
-    uint8_t newval = clearval | (value << shift);                       \
+    uint8_t size  = reg ## _ ## field ## _SIZE;                         \
                                                                         \
-    assert((value << shift) <= mask);                                   \
-    ppu_reg_i_ ## reg ## _set(newval);                                  \
+    ppu_reg_i_set_field(ppu_reg, shift, size, value);                   \
 }))
 
 /* Setters/Getters for the whole register */
-#define PPU_REG_GET(reg)        ppu_reg_i_ ## reg ## _get()
+#define PPU_REG_GET(reg)        ppu_reg_i_get(PPU_REG_ ## reg)
 #define PPU_REG_SET(reg, v)     (({                                     \
     assert(v <= 0xFF);                                                  \
-    ppu_reg_i_ ## reg ## _set(v);                                       \
+    ppu_reg_i_set(PPU_REG_ ## reg, v);                                  \
 }))
