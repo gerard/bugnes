@@ -19,6 +19,7 @@
 #define PPU_MEM_ADDR_MAP    0x2006
 #define PPU_MEM_DATA_MAP    0x2007
 
+#define PPU_SPRITE_DMA_MAP  0x4014
 
 int step_cb(struct sfot_step_info *info)
 {
@@ -46,6 +47,13 @@ uint16_t mirror_internal_ram(uint16_t addr)
     assert(addr < INTERNAL_RAM_MIRROR_STOP);
 
     return mirror(addr, INTERNAL_RAM_MIRROR_START, INTERNAL_RAM_MIRROR_STOP);
+}
+
+/* DMA memory from CPU to Sprite Memory in PPU */
+uint8_t hook_sprite_dma_write(uint16_t addr, uint8_t value)
+{
+    sfot_do_dma((uint16_t)value << 8, PPU_sprite_dma_dest(), 0x100);
+    return value;
 }
 
 
@@ -84,6 +92,7 @@ int main(int argc, char *argv[])
     sfot_memhook_insert_write_simple(PPU_hook_cr2_write, PPU_CR2_MAP);
     sfot_memhook_insert_write_simple(PPU_hook_memaddr_write, PPU_MEM_ADDR_MAP);
     sfot_memhook_insert_write_simple(PPU_hook_memdata_write, PPU_MEM_DATA_MAP);
+    sfot_memhook_insert_write_simple(hook_sprite_dma_write, PPU_SPRITE_DMA_MAP);
 
     sfot_memhook_insert_transl(mirror_internal_ram, INTERNAL_RAM_MIRROR_START
                                                   , INTERNAL_RAM_MIRROR_STOP);

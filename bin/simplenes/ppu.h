@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+uint8_t *PPU_sprite_dma_dest();
+
 uint8_t PPU_hook_cr1_read(uint16_t addr);
 uint8_t PPU_hook_cr2_read(uint16_t addr);
 uint8_t PPU_hook_status_read(uint16_t addr);

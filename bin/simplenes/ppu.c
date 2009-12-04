@@ -11,6 +11,16 @@
 
 #include "ppu_registers.h"
 
+
+/* SPRITE MEMORY */
+#define SPRITE_MEMORY   0x100
+static uint8_t sprite_mem[SPRITE_MEMORY];
+
+uint8_t *PPU_sprite_dma_dest()
+{
+    return sprite_mem;
+}
+
 /* MAIN PPU MEMORY */
 /* memhook_PPU_memread() needs this because the first read is dummy */
 static int memaddr_just_setted;
@@ -102,6 +112,7 @@ uint8_t PPU_hook_memdata_write(uint16_t addr, uint8_t value)
     memwrite(value);
     return 0;
 }
+
 
 /* XXX: We assume that fd is already lseeked to the beginning of the VROM */
 int PPU_load(int fd)
