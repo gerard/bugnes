@@ -45,6 +45,14 @@ uint8_t write_mh_hit(uint16_t addr, uint8_t value)
     return 0;
 }
 
+/* This mimics DMA access to sprite memory in the NES */
+uint8_t dma_memory_read[0x100];
+uint8_t write_mh_trigger_dma(uint16_t addr, uint8_t value)
+{
+    sfot_do_dma(value * 0x100, dma_memory_read, 0x100);
+    return value;
+}
+
 /* Mirrors 0x80 in 0x0 */
 uint16_t transl_mh_mirror(uint16_t addr) {
     if (addr == 0x80) return 0;
@@ -181,6 +189,39 @@ START_TEST (SubroutineCallAndReturn)
 }
 END_TEST
 
+START_TEST (DMA)
+{
+    const uint8_t ASM[] = {
+        LDA_IMM(0xFF),
+        STA_ZPA(0x33),
+        STA_ZPA(0x77),
+        STA_ZPA(0xBB),
+        LDA_IMM(0x0),
+        STA_ABS(0x400),
+        JMP_TO_SUCC(),
+    };
+    uint16_t asm_size = sizeof(ASM);
+    sfot_load_stream(ASM, 0x200, asm_size);
+    sfot_memhook_insert_write_simple(write_mh_trigger_dma, 0x400);
+
+    sfot_poweron(SFOT_RUN_MAIN);
+
+    int i;
+    for (i = 0; i < 0x100; i++) {
+        switch (i) {
+        case 0x33:
+        case 0x77:
+        case 0xBB:
+            fail_unless(dma_memory_read[i] == 0xFF, "DMA Readback failed on 0x%X", i);
+            break;
+        default:
+            fail_unless(dma_memory_read[i] == 0x0);
+        }
+    }
+
+    CHECK_EXC_RET();
+}
+END_TEST
 
 Suite *cpu_6502_suite(void)
 {
@@ -190,6 +231,7 @@ Suite *cpu_6502_suite(void)
     tcase_add_test(tc_main, MirrorWithTranslationHook);
     tcase_add_test(tc_main, CarryOnChainedSBC);
     tcase_add_test(tc_main, SubroutineCallAndReturn);
+    tcase_add_test(tc_main, DMA);
     suite_add_tcase(s, tc_main);
 
     return s;

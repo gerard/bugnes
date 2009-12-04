@@ -53,6 +53,7 @@ typedef int (*sfot_step_cb)(struct sfot_step_info *info);
 sfot_step_cb sfot_install_step_cb(sfot_step_cb step_cb);
 
 void sfot_set_reset(uint16_t val);
+void sfot_do_dma(uint16_t addr, uint8_t *dest, uint16_t size);
 
 int sfot_load(int fd, uint16_t offset, uint16_t len);
 int sfot_load_stream(const uint8_t *s, uint16_t offset, uint16_t len);

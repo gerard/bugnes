@@ -57,6 +57,16 @@ static void *cpu_thread(void *arg)
     return NULL;
 }
 
+void sfot_do_dma(uint16_t addr, uint8_t *dest, uint16_t size)
+{
+    uint16_t i;
+
+    /* Let this thing overflow (although I don't think anyone is doing it) */
+    for (i = 0; i < size; i++) {
+        dest[i] = MEM_READ(addr + i);
+    }
+}
+
 int sfot_load(int fd, uint16_t offset, uint16_t len)
 {
     uint8_t buf[0x10000];

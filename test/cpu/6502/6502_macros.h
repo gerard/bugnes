@@ -9,6 +9,7 @@
 #define LDA_ZPA(x)      0xA5, (x)
 #define LDX_IMM(x)      0xA2, (x)
 #define STA_ZPA(x)      0x85, (x)
+#define STA_ABS(x)      0x8D, __DEMUX16(x)
 
 #define TXS_IMP()       0x9A
 #define PHA_IMP()       0x48
