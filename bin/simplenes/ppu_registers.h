@@ -102,7 +102,4 @@ void ppu_reg_i_set_field(ppu_reg_t reg, uint8_t shift, uint8_t size, uint8_t val
 
 /* Setters/Getters for the whole register */
 #define PPU_REG_GET(reg)        ppu_reg_i_get(PPU_REG_ ## reg)
-#define PPU_REG_SET(reg, v)     (({                                     \
-    assert(v <= 0xFF);                                                  \
-    ppu_reg_i_set(PPU_REG_ ## reg, v);                                  \
-}))
+#define PPU_REG_SET(reg, v)     ppu_reg_i_set(PPU_REG_ ## reg, v);

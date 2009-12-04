@@ -14,7 +14,7 @@ ifndef V
 endif
 
 # Some standard flags
-CFLAGS = -Wall -O0 -g -DVERSION=\"$(VERSION)\"
+CFLAGS = -Wall -Wextra -Wno-unused-parameter -O0 -g -DVERSION=\"$(VERSION)\"
 LDFLAGS =
 
 PROJECT_PATH = $(subst $(BUGNES_ROOT)/,,$(shell pwd))

@@ -10,8 +10,8 @@
 
 /* Convenience declaration macros.  To be undefined as soon as possible. */
 #define DEFINE_FUN(opc)             static void asm_##opc(addr_mode_t)
-#define O(name, addr, cycles)       { #name, asm_##name, addr, cycles }
-#define O_UNKNOWN                   { "XXX", asm_NOP, A_IMP, 2 }
+#define O(name, addr, cycles)       { #name, asm_##name, addr, 0, cycles }
+#define O_UNKNOWN                   { "XXX", asm_NOP, A_IMP, 0, 2 }
 
 typedef void (*fun_t)(addr_mode_t);
 struct sfot_opcode {
