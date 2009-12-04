@@ -5,52 +5,20 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <assert.h>
 
+#include "hooks.h"
 #include "ppu.h"
 #include "cpu/sfot.h"
 
-#define PPU_CR1_MAP         0x2000
-#define PPU_CR2_MAP         0x2001
-#define PPU_STATUS_MAP      0x2002
-#define PPU_SPRITE_ADDR_MAP 0x2003
-#define PPU_SPRITE_DATA_MAP 0x2004
-#define PPU_SCR_SCOLL_MAP   0x2005
-#define PPU_MEM_ADDR_MAP    0x2006
-#define PPU_MEM_DATA_MAP    0x2007
 
-#define PPU_SPRITE_DMA_MAP  0x4014
-
-int step_cb(struct sfot_step_info *info)
+static int step_cb(struct sfot_step_info *info)
 {
     printf("%s\n", info->opcode_decoded);
-
     return 0;
 }
 
-/* All mirroring functions resort to this. it reads like this:
- * We have a address space from START to STOP, but the amount of physical
- * memory is SIZE.  Since the translation hook is executed before any other
- * hook, account that only the translated address will be accessed; ie, from
- * START to SIZE.
- */
-uint16_t mirror(uint16_t addr, uint16_t start, uint16_t size)
-{
-    return (addr % size) + start;
-}
-
-#define INTERNAL_RAM_MIRROR_START   0x0000
-#define INTERNAL_RAM_MIRROR_STOP    0x2000
-#define INTERNAL_RAM_MIRROR_SIZE    0x0800
-uint16_t mirror_internal_ram(uint16_t addr)
-{
-    assert(addr < INTERNAL_RAM_MIRROR_STOP);
-
-    return mirror(addr, INTERNAL_RAM_MIRROR_START, INTERNAL_RAM_MIRROR_STOP);
-}
-
-/* DMA memory from CPU to Sprite Memory in PPU */
-uint8_t hook_sprite_dma_write(uint16_t addr, uint8_t value)
+/* FIXME: Refactor this so it can go to hooks.c */
+static uint8_t hook_sprite_dma_write(uint16_t addr, uint8_t value)
 {
     sfot_do_dma((uint16_t)value << 8, PPU_sprite_dma_dest(), 0x100);
     return value;

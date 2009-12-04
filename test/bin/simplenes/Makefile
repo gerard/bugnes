@@ -5,7 +5,7 @@ COMPILE_PATH_GCOV = obj
 
 CFLAGS += -I$(SOURCES_PATH_GCOV)
 
-SOURCES_GCOV = ppu.c ppu_registers.c 
+SOURCES_GCOV = hooks.c ppu.c ppu_registers.c
 OBJECTS_GCOV = $(patsubst $(SOURCES), obj/%.o, $(TEST_SRC))
 
 SOURCES_CHECK = check.c
